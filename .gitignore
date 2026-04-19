@@ -1,0 +1,43 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+Assets/External/
+Assets/Plugins/Editor/
+
+# VS
+*.suo
+*.user
+*.userprefs
+*.sln.docstates
+.vs/
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+._*
+
+# Logs
+*[Ll]ogs/
+*.log
+
+# Unity generated
+*.apy
+*.byte
+*.cache
+*.frag
+*.pdf
+*.png
+*.rtf
+*.txt
+*.unitypackager
+
+# Post-processing
+Exr/
