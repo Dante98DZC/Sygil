@@ -7,15 +7,15 @@ namespace PhysicsSystem.Renderer
     /// </summary>
     public enum OverlayMode
     {
-        None            = 0,  // overlay apagado
+        None             = 0,  // overlay apagado
         Temperature     = 1,
-        Pressure        = 2,
-        Humidity        = 3,
-        ElectricEnergy  = 4,
-        GasDensity      = 5,
-        StructuralDamage = 6, // integridad invertida — muestra daño, no salud
-        DerivedStates   = 7,  // flags activos como colores
-        Activity        = 8,  // debug: tiles en ActiveTiles
-        Combined        = 9,  // mezcla aditiva — comportamiento original
+        GasMaterial      = 2,  // color por tipo de gas, opacidad por densidad
+        LiquidMaterial   = 3,  // color por tipo de líquido, opacidad por volumen
+        Pressure         = 4,  // gasDensity como presión
+        ElectricEnergy   = 5,
+        Structural       = 6,  // integridad estructural (daño si < 60%)
+        DerivedStates    = 7,  // flags activos como colores
+        Activity         = 8,  // debug: tiles en ActiveTiles
+        Combined        = 9,  // mezcla aditiva
     }
 }

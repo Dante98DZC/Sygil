@@ -63,7 +63,7 @@
     <Compile Include="Assets\PhysicsSystem\Renderer\Overlay\PropertyOverlayRenderer.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\CompiledPowerModifier.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R03_ElectricPropagation.cs" />
-    <Compile Include="Assets\PhysicsSystem\Debug\RuleEventLog.cs" />
+    <Compile Include="Assets\PhysicsSystem\Debug\SimulationDebugPanel.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\IInteractionRule.cs" />
     <Compile Include="Assets\PhysicsSystem\Core\MaterialLayer.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\ISimulationModifier.cs" />
@@ -72,8 +72,6 @@
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R10_GasIgnition.cs" />
     <Compile Include="Assets\PhysicsSystem\Diffusion\PressureDiffusion.cs" />
     <Compile Include="Assets\PhysicsSystem\Config\MaterialLibrary.cs" />
-    <Compile Include="Assets\PhysicsSystem\Debug\Simulationdebughud.cs" />
-    <Compile Include="Assets\PhysicsSystem\Debug\Tileinspector.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R06_PressureRelease.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R12_GasPressure.cs" />
     <Compile Include="Assets\PhysicsSystem\Config\SimulationConfig.cs" />

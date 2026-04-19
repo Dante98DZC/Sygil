@@ -38,3 +38,5 @@ MonoBehaviour:
   hasMeltingPoint: 1
   meltingTemperature: 90
   meltInto: 0
+  latentHeatOfFusion: 120
+  latentHeatOfVaporization: 180

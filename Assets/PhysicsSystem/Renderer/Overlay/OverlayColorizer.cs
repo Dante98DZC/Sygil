@@ -1,5 +1,6 @@
 // Assets/PhysicsSystem/Renderer/OverlayColorizer.cs
 using UnityEngine;
+using System.Collections.Generic;
 using PhysicsSystem.Core;
 using PhysicsSystem.States;
 
@@ -35,22 +36,44 @@ namespace PhysicsSystem.Renderer
         // Umbral mínimo de intensidad para mostrar color (evita ruido)
         private const float Threshold = 0.04f;
 
+        // ── Colores por tipo de gas (MaterialType → Color) ─────────────────────
+        private static readonly Dictionary<MaterialType, Color> GasColors = new()
+        {
+            { MaterialType.STEAM,     new Color(0.95f, 0.95f, 1.0f)     },  // blanco hints
+            { MaterialType.SMOKE,      new Color(0.25f, 0.22f, 0.20f)    },  // gris oscuro
+            { MaterialType.CO2,        new Color(0.3f,  0.8f,  0.6f)    },  // verde azulado
+            { MaterialType.ROCK_GAS,    new Color(0.8f,  0.3f,  0.9f)    },  // violeta
+            { MaterialType.GAS,        new Color(0.3f,  1.0f,  0.2f)  },  // verde (legacy)
+            { MaterialType.EMPTY,       Color.clear                       },
+        };
+
+        // ── Colores por tipo de líquido (MaterialType → Color) ─────────────────
+        private static readonly Dictionary<MaterialType, Color> LiquidColors = new()
+        {
+            { MaterialType.WATER,       new Color(0.2f,  0.5f,  1.0f)    },  // azul
+            { MaterialType.LAVA,        new Color(1.0f,  0.35f, 0.1f)    },  // naranja-rojo
+            { MaterialType.MUD,         new Color(0.45f, 0.3f,  0.2f)    },  // marrón
+            { MaterialType.MOLTEN_METAL,new Color(0.75f, 0.75f, 0.8f)    },  // plata
+            { MaterialType.MOLTEN_GLASS,new Color(0.4f,  0.9f,  0.9f)    },  // cian
+            { MaterialType.EMPTY,       Color.clear                   },
+        };
+
         // ────────────────────────────────────────────────────────────────────
         public static Color GetColor(TileData tile, OverlayMode mode, bool isActive = false)
         {
             return mode switch
             {
-                OverlayMode.None             => Color.clear,
-                OverlayMode.Temperature      => Temperature(tile.temperature),
-                OverlayMode.Pressure         => SimpleGradient(tile.gasDensity,   _colorPressure),
-                OverlayMode.Humidity         => SimpleGradient(tile.liquidVolume, _colorHumidity),
-                OverlayMode.ElectricEnergy   => ElectricGradient(tile.electricEnergy),
-                OverlayMode.GasDensity       => SimpleGradient(tile.gasDensity,     _colorGas),
-                OverlayMode.StructuralDamage => StructuralDamage(tile.structuralIntegrity),
-                OverlayMode.DerivedStates    => DerivedStates(tile.derivedStates),
-                OverlayMode.Activity         => Activity(isActive),
-                OverlayMode.Combined         => Combined(tile),
-                _                            => Color.clear,
+                OverlayMode.None              => Color.clear,
+                OverlayMode.Temperature        => Temperature(tile.temperature),
+                OverlayMode.GasMaterial      => GasMaterial(tile.gasMaterial, tile.gasDensity),
+                OverlayMode.LiquidMaterial   => LiquidMaterial(tile.liquidMaterial, tile.liquidVolume),
+                OverlayMode.Pressure         => Pressure(tile.gasDensity),
+                OverlayMode.ElectricEnergy  => ElectricGradient(tile.electricEnergy),
+                OverlayMode.Structural       => StructuralDamage(tile.structuralIntegrity),
+                OverlayMode.DerivedStates   => DerivedStates(tile.derivedStates),
+                OverlayMode.Activity        => Activity(isActive),
+                OverlayMode.Combined        => Combined(tile),
+                _                           => Color.clear,
             };
         }
 
@@ -105,6 +128,40 @@ namespace PhysicsSystem.Renderer
             Color c = Color.Lerp(_colorElectric, Color.white, t * 0.6f);
             c.a = Mathf.Lerp(0.15f, MaxAlpha, t);
             return c;
+        }
+
+        // ── GasMaterial — color por tipo, opacidad por densidad ───────────────
+        private static Color GasMaterial(MaterialType gasType, float density)
+        {
+            if (gasType == MaterialType.EMPTY || density < Threshold)
+                return Color.clear;
+
+            float t = Mathf.Clamp01(density / 100f);
+            Color baseColor = GasColors.TryGetValue(gasType, out var c) ? c : _colorGas;
+
+            Color result = baseColor;
+            result.a = Mathf.Lerp(0.15f, MaxAlpha, t);
+            return result;
+        }
+
+        // ── LiquidMaterial — color por tipo, opacidad por volumen ───────────────
+        private static Color LiquidMaterial(MaterialType liquidType, float volume)
+        {
+            if (liquidType == MaterialType.EMPTY || volume < Threshold)
+                return Color.clear;
+
+            float t = Mathf.Clamp01(volume / 100f);
+            Color baseColor = LiquidColors.TryGetValue(liquidType, out var c) ? c : _colorHumidity;
+
+            Color result = baseColor;
+            result.a = Mathf.Lerp(0.15f, MaxAlpha, t);
+            return result;
+        }
+
+        // ── Presión — gradiente azul claro por gasDensity ────────────────────
+        private static Color Pressure(float density)
+        {
+            return SimpleGradient(density, _colorPressure);
         }
 
         // ── Daño estructural — solo visible cuando integridad < 60 ──────────

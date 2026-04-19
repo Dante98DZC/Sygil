@@ -119,6 +119,24 @@ namespace PhysicsSystem.Core
         /// </summary>
         public MaterialType collapseInto = MaterialType.EMPTY;
 
+        // ── Calor Latente ─────────────────────────────────────────────────────
+        // Energía absorbida/liberada durante transiciones de fase.
+        // El mismo valor aplica en ambas direcciones (fusión/solidificación, ebullición/condensación).
+
+        [Header("Calor Latente")]
+
+        /// <summary>
+        /// Energía absorbida durante fusión (sólido → líquido) en unidades de temperatura.
+        /// Mismo valor se libera durante solidificación (líquido → sólido).
+        /// </summary>
+        public float latentHeatOfFusion = 0f;
+
+        /// <summary>
+        /// Energía absorbida durante ebullición (líquido → gas) en unidades de temperatura.
+        /// Mismo valor se libera durante condensación (gas → líquido).
+        /// </summary>
+        public float latentHeatOfVaporization = 0f;
+
         // ── Campos v2 obsoletos ───────────────────────────────────────────────
         // Mantenidos para que los ScriptableObjects existentes no pierdan datos.
         // No usar en código nuevo — usar meltingPoint / liquidForm en su lugar.

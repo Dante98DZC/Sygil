@@ -52,9 +52,8 @@ namespace PhysicsSystem.Renderer
 
         private static readonly string[] _modeNames =
         {
-            "OFF", "Temperatura", "Presión", "Humedad",
-            "Electricidad", "Gas", "Daño estructural",
-            "Estados derivados", "Actividad", "Combinado"
+            "OFF", "Temperatura", "Gas", "Líquido", "Presión",
+            "Electricidad", "Estructura", "Estados", "Actividad", "Combinado"
         };
 
         // ────────────────────────────────────────────────────────────────────

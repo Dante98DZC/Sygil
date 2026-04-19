@@ -141,6 +141,16 @@ namespace PhysicsSystem.Core
         public bool wasEmpty;
 
         // ══════════════════════════════════════════════════════════════════════
+        // ATMOSPHERE FLAG — derivado de la geometría
+        // ══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// true si no hay ningún tile sólido en la columna entre este tile y el tope del grid.
+        /// Se calcula en PhysicsGrid.RebuildAtmosphereFlags() — no asignar directamente.
+        /// </summary>
+        public bool isAtmosphereOpen;
+
+        // ══════════════════════════════════════════════════════════════════════
         // HELPERS
         // ══════════════════════════════════════════════════════════════════════
 

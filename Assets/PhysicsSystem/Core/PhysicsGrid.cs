@@ -114,5 +114,28 @@ namespace PhysicsSystem.Core
 
         public MaterialDefinition GetMaterialDef(Vector2Int pos) =>
             GetMaterialDef(pos, MaterialLayer.Ground);
+
+        /// <summary>
+        /// Recalcula isAtmosphereOpen para todos los tiles.
+        /// Un tile es "atmósfera abierta" si no hay ningún tile sólido en su columna
+        /// entre su posición y el tope del grid.
+        /// Llamar al inicializar el grid y cuando un tile cambie a estado sólido o deje de serlo.
+        /// </summary>
+        public void RebuildAtmosphereFlags()
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                bool solidFound = false;
+                for (int y = Height - 1; y >= 0; y--)
+                {
+                    ref var tile = ref _grid[x, y];
+                    if (tile.groundMaterial != MaterialType.EMPTY)
+                    {
+                        solidFound = true;
+                    }
+                    tile.isAtmosphereOpen = !solidFound;
+                }
+            }
+        }
     }
 }

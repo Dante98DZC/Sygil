@@ -24,6 +24,7 @@ namespace PhysicsSystem.Rules.Rules
         private const float MeltFillFraction = 0.5f;
 
         private MaterialType _liquidForm;
+        private float _latentHeat;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
@@ -35,6 +36,7 @@ namespace PhysicsSystem.Rules.Rules
             if (tile.LiquidCapacity <= 0f)                   return false;
 
             _liquidForm = def.liquidForm;
+            _latentHeat = def.latentHeatOfFusion;
             return true;
         }
 
@@ -46,7 +48,11 @@ namespace PhysicsSystem.Rules.Rules
             tile.groundMaterial = MaterialType.EMPTY;
 
             // La fusión consume energía térmica (calor latente)
-            tile.temperature = Mathf.Clamp(tile.temperature - 5f, 0f, 100f);
+            tile.temperature -= _latentHeat;
+#if UNITY_EDITOR
+            if (tile.temperature < 0f || tile.temperature > 100f)
+                Debug.LogWarning($"[PhaseTransitions] Temperature out of range: {tile.temperature} after R13 (Melting)");
+#endif
         }
     }
 
@@ -65,6 +71,7 @@ namespace PhysicsSystem.Rules.Rules
         public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private MaterialType _solidForm;
+        private float _latentHeat;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
@@ -76,6 +83,7 @@ namespace PhysicsSystem.Rules.Rules
             if (def.solidForm == MaterialType.EMPTY)         return false;
 
             _solidForm = def.solidForm;
+            _latentHeat = def.latentHeatOfFusion;
             return true;
         }
 
@@ -86,7 +94,11 @@ namespace PhysicsSystem.Rules.Rules
             tile.liquidVolume   = 0f;
 
             // La solidificación libera calor latente
-            tile.temperature = Mathf.Clamp(tile.temperature + 3f, 0f, 100f);
+            tile.temperature += _latentHeat;
+#if UNITY_EDITOR
+            if (tile.temperature < 0f || tile.temperature > 100f)
+                Debug.LogWarning($"[PhaseTransitions] Temperature out of range: {tile.temperature} after R14 (Freezing)");
+#endif
         }
     }
 
@@ -110,6 +122,7 @@ namespace PhysicsSystem.Rules.Rules
         private const float NeighborDensityGain =  5f;  // presurización de vecinos
 
         private MaterialType _gasForm;
+        private float _latentHeat;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
@@ -121,6 +134,7 @@ namespace PhysicsSystem.Rules.Rules
             if (def.gasForm == MaterialType.EMPTY)           return false;
 
             _gasForm = def.gasForm;
+            _latentHeat = def.latentHeatOfVaporization;
             return true;
         }
 
@@ -137,8 +151,12 @@ namespace PhysicsSystem.Rules.Rules
             // La ebullición siempre incrementa la densidad de gas (presión)
             tile.gasDensity  = Mathf.Clamp(tile.gasDensity  + GasDensityGain, 0f, 100f);
 
-            // La ebullición consume energía térmica
-            tile.temperature = Mathf.Clamp(tile.temperature - 8f, 0f, 100f);
+            // La ebullición consume energía térmica (calor latente de vaporización)
+            tile.temperature -= _latentHeat;
+#if UNITY_EDITOR
+            if (tile.temperature < 0f || tile.temperature > 100f)
+                Debug.LogWarning($"[PhaseTransitions] Temperature out of range: {tile.temperature} after R15 (Boiling)");
+#endif
 
             // El vapor presuriza los vecinos vía gasDensity
             for (int i = 0; i < neighbors.Length; i++)
@@ -168,6 +186,7 @@ namespace PhysicsSystem.Rules.Rules
         private const float CondensationVolume = 20f;
 
         private MaterialType _condensedForm;
+        private float _latentHeat;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
@@ -178,6 +197,7 @@ namespace PhysicsSystem.Rules.Rules
             if (def.condensedForm == MaterialType.EMPTY)     return false;
 
             _condensedForm = def.condensedForm;
+            _latentHeat = def.latentHeatOfVaporization;
             return true;
         }
 
@@ -205,7 +225,11 @@ namespace PhysicsSystem.Rules.Rules
             // Si LiquidCapacity == 0 (tile sólido) el gas se disuelve sin generar líquido
 
             // La condensación libera calor latente
-            tile.temperature = Mathf.Clamp(tile.temperature + 2f, 0f, 100f);
+            tile.temperature += _latentHeat;
+#if UNITY_EDITOR
+            if (tile.temperature < 0f || tile.temperature > 100f)
+                Debug.LogWarning($"[PhaseTransitions] Temperature out of range: {tile.temperature} after R16 (Condensation)");
+#endif
         }
     }
 }

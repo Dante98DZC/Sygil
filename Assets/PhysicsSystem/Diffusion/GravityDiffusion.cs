@@ -25,6 +25,8 @@ namespace PhysicsSystem.Diffusion
             _property = property;
         }
 
+        [SerializeField] private float _dissipationThreshold = 5f;
+
         public void Diffuse(PhysicsGrid grid, MaterialLibrary lib)
         {
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
@@ -60,7 +62,8 @@ namespace PhysicsSystem.Diffusion
                     float diff = sourceVal - neighborVal;
                     if (diff <= 0f) continue;
 
-                    float bias     = ComputeBias(ref tile, ref neighbor);
+                    Vector2Int direction = npos - pos;
+                    float bias     = ComputeBias(ref tile, ref neighbor, direction);
                     float transfer = diff * nDef.gasPermeabilityCoeff * bias * 0.25f;
                     if (transfer <= 0f) continue;
 
@@ -70,21 +73,48 @@ namespace PhysicsSystem.Diffusion
                     grid.MarkDirty(npos);
                 }
             }
+
+            // Disipación post-difusión para gas en atmósfera abierta
+            if (_property == GravityProperty.GasDensity)
+            {
+                ApplyDissipation(grid);
+            }
         }
 
         /// <summary>
-        /// Gas: equal bias in all directions (top-down has no physical gravity axis).
+        /// Gas: directional bias — gas rises more easily (direction.y < 0 = up gets bias 0.4).
         /// Fluid: flows toward lower TileHeight — higher delta = stronger flow.
         /// Scale 0.2f per height step: diff=1 → bias=0.7, diff=2 → bias=0.9, diff=-1 → bias=0.3.
         /// </summary>
-        private float ComputeBias(ref TileData source, ref TileData neighbor)
+        private float ComputeBias(ref TileData source, ref TileData neighbor, Vector2Int direction)
         {
             if (_property == GravityProperty.GasDensity)
-                return 0.25f;
+            {
+                if (direction.y < 0) return 0.4f;  // Arriba (gas sube)
+                if (direction.y > 0) return 0.1f;  // Abajo
+                return 0.25f;                     // Lateral
+            }
 
             // TileHeight is int enum: Deep=-2 … Tall=3
             int heightDiff = (int)source.height - (int)neighbor.height;
             return Mathf.Clamp01(0.5f + heightDiff * 0.2f);
+        }
+
+        /// <summary>
+        /// Elimina gas con densidad baja en atmósfera abierta.
+        /// La energía se considera perdida a la atmósfera.
+        /// </summary>
+        private void ApplyDissipation(PhysicsGrid grid)
+        {
+            foreach (var pos in grid.ActiveTiles)
+            {
+                ref var tile = ref grid.GetTile(pos);
+                if (tile.isAtmosphereOpen && tile.gasDensity < _dissipationThreshold)
+                {
+                    tile.gasDensity = 0f;
+                    tile.gasMaterial = MaterialType.EMPTY;
+                }
+            }
         }
 
         /// <summary>
