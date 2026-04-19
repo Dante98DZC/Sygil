@@ -30,7 +30,7 @@ MonoBehaviour:
   condensationPoint: 0
   condensedForm: 0
   freezingPoint: 0
-  solidForm: 0
+  solidForm: 9
   ignitionTemperature: 70
   burnInto: 0
   smokeForm: 17

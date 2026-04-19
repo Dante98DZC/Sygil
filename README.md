@@ -218,7 +218,7 @@ I14: humidity_is_derived — use liquidVolume + STEAM
 
 ## Documentation
 
-- **Full context**: `.vscode/LLMAgent/AgentContext.md`
+- **Full context**: `AGENTS_Context.md`
 - **Agent instructions**: `AGENTS.md`
 - **API warnings**: AGENTS.md includes critical v4 API notes
 

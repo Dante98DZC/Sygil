@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: MatDef_Metal
   m_EditorClassIdentifier: 
   materialType: 2
+  matterState: 0
   heatTransferCoeff: 0.9
   electricTransferCoeff: 0.95
   gasPermeabilityCoeff: 0
@@ -22,8 +23,18 @@ MonoBehaviour:
   blocksVision: 0
   slowsMovement: 0
   movementCost: 1
-  collapseInto: 0
+  meltingPoint: 90
+  liquidForm: 12
+  boilingPoint: 0
+  gasForm: 0
+  condensationPoint: 0
+  condensedForm: 0
+  freezingPoint: 0
+  solidForm: 0
   ignitionTemperature: 0
+  burnInto: 0
+  smokeForm: 16
+  collapseInto: 0
   hasMeltingPoint: 1
   meltingTemperature: 90
   meltInto: 0

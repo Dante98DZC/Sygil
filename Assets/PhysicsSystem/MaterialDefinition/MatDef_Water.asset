@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: MatDef_Water
   m_EditorClassIdentifier: 
   materialType: 4
+  matterState: 1
   heatTransferCoeff: 0.8
   electricTransferCoeff: 0.9
   gasPermeabilityCoeff: 0.9
@@ -22,8 +23,18 @@ MonoBehaviour:
   blocksVision: 0
   slowsMovement: 1
   movementCost: 1
-  collapseInto: 0
+  meltingPoint: 0
+  liquidForm: 0
+  boilingPoint: 0
+  gasForm: 0
+  condensationPoint: 0
+  condensedForm: 0
+  freezingPoint: 0
+  solidForm: 8
   ignitionTemperature: 0
+  burnInto: 0
+  smokeForm: 16
+  collapseInto: 0
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0

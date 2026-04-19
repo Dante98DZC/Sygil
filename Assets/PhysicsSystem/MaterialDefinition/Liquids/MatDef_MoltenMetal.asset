@@ -10,31 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 99c89ba65cfa79c49a575146686c1a5d, type: 3}
-  m_Name: MatDef_Stone
+  m_Name: MatDef_MoltenMetal
   m_EditorClassIdentifier: 
-  materialType: 3
-  matterState: 0
-  heatTransferCoeff: 0.3
+  materialType: 12
+  matterState: 1
+  heatTransferCoeff: 0.9
   electricTransferCoeff: 0
-  gasPermeabilityCoeff: 0.1
+  gasPermeabilityCoeff: 0.7
   flammabilityCoeff: 0
-  integrityBase: 90
+  integrityBase: 70
   blocksMovement: 0
   blocksVision: 0
   slowsMovement: 0
   movementCost: 1
-  meltingPoint: 100
-  liquidForm: 11
+  meltingPoint: 0
+  liquidForm: 0
   boilingPoint: 1500
-  gasForm: 18
+  gasForm: 0
   condensationPoint: 0
   condensedForm: 0
   freezingPoint: 0
-  solidForm: 0
+  solidForm: 2
   ignitionTemperature: 0
   burnInto: 0
   smokeForm: 16
   collapseInto: 0
-  hasMeltingPoint: 1
+  hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0

@@ -40,10 +40,12 @@ GetMaterialDef(pos, MaterialLayer.Ground) // etc
 - `RuleTests.cs` (EditMode) — use obsolete API, needs v4 update
 - `TickBehaviorTests.cs` (PlayMode) — 10/10 pass but use obsolete API
 
-## Pending Changes (from AgentContext.md)
+## Pending Changes (from AGENTS_Context.md)
 1. Fix `PhysicsGrid.GetMaterialDef()` — add MaterialLayer param
 2. Update tests to v4 API
 
 ## Reference
-- Full context: `.vscode/LLMAgent/AgentContext.md` (v6.2)
+- Full context: `AGENTS_Context.md` (v6.2)
+- Action plan: `AGENTS_ActionPlan.md`
+- Unity Editor: `AGENTS_UnityEditor.md`
 - Rules: `Assets/PhysicsSystem/Rules/Rules/R_PhaseTransitions.cs`
