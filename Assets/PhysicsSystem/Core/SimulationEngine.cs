@@ -124,10 +124,10 @@ namespace PhysicsSystem.Core
             {
                 ref var tile     = ref Grid.GetTile(pos);
                 var neighbors    = Grid.GetNeighborsFromFrozen(pos, frozen);
-                var neighborDefs = GetNeighborDefs(pos);
-                var def          = Grid.GetMaterialDef(pos);
+                var neighborDefs = GetNeighborDefs(pos, MaterialLayer.Ground);
+                var def          = Grid.GetMaterialDef(pos, MaterialLayer.Ground);
 
-                _ruleRegistry.Evaluate(ref tile, neighbors, neighborDefs, def, tickType, pos);
+                _ruleRegistry.Evaluate(ref tile, neighbors, neighborDefs, def, tickType, pos, Grid);
                 Grid.WriteNeighbors(pos, neighbors);
             }
 
@@ -147,12 +147,12 @@ namespace PhysicsSystem.Core
             Grid.ClearDirtyFlags();
         }
 
-        private MaterialDefinition[] GetNeighborDefs(Vector2Int pos)
+        private MaterialDefinition[] GetNeighborDefs(Vector2Int pos, MaterialLayer layer)
         {
             var positions = Grid.GetNeighborPositions(pos);
             var defs      = new MaterialDefinition[positions.Length];
             for (int i = 0; i < positions.Length; i++)
-                defs[i] = Grid.GetMaterialDef(positions[i]);
+                defs[i] = Grid.GetMaterialDef(positions[i], layer);
             return defs;
         }
 

@@ -26,7 +26,7 @@ namespace PhysicsSystem.DebugTools
         private GUIStyle    _pinnedBadge;
 
         private const float PanelWidth  = 210f;
-        private const float PanelHeight = 330f;
+        private const float PanelHeight = 350f;
         private const float PanelOffset = 14f;
 
         private void Update()
@@ -77,17 +77,18 @@ namespace PhysicsSystem.DebugTools
             y += 22f;
 
             // Material + height
-            DrawRow(x, ref y, "Material",  tile.material.ToString());
+            DrawRow(x, ref y, "Ground",    tile.groundMaterial.ToString());
+            DrawRow(x, ref y, "Liquid",   tile.liquidMaterial.ToString());
+            DrawRow(x, ref y, "Gas",      tile.gasMaterial.ToString());
             DrawRow(x, ref y, "Altura",    tile.height.ToString());
             y += 4f;
 
             // Propiedades numéricas
-            DrawRow(x, ref y, "Temperatura",  $"{tile.temperature:F1}");
-            DrawRow(x, ref y, "Presión",      $"{tile.gasDensity:F1}");
-            DrawRow(x, ref y, "Humedad",    $"{tile.liquidVolume:F1}");
-            DrawRow(x, ref y, "Electricidad", $"{tile.electricEnergy:F1}");
-            DrawRow(x, ref y, "Gas",          $"{tile.gasDensity:F1}");
-            DrawRow(x, ref y, "Integridad",   $"{tile.structuralIntegrity:F1}");
+            DrawRow(x, ref y, "Temperatura",    $"{tile.temperature:F1}");
+            DrawRow(x, ref y, "Densidad Gas",  $"{tile.gasDensity:F1}");
+            DrawRow(x, ref y, "Volumen Líq",  $"{tile.liquidVolume:F1}");
+            DrawRow(x, ref y, "Electricidad",   $"{tile.electricEnergy:F1}");
+            DrawRow(x, ref y, "Integridad",    $"{tile.structuralIntegrity:F1}");
             y += 4f;
 
             // Estados derivados

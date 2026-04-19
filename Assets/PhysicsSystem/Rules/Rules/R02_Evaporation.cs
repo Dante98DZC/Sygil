@@ -26,6 +26,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R02_EVAPORATION;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 6;
+        public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private const float EvaporationTemperature = 80f;
         private const float NeighborDensityGain    = 15f;

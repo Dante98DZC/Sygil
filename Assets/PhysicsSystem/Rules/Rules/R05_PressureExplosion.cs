@@ -21,6 +21,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R05_PRESSURE_EXPLOSION;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 1;
+        public MaterialLayer SourceLayer => MaterialLayer.Gas;
 
         private const float ExplosionThreshold = 80f;
         private const float ImplosionThreshold = 20f;

@@ -25,6 +25,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R01_COMBUSTION;
         public TickType TickType => TickType.STANDARD;
         public int      Priority => 3;
+        public MaterialLayer SourceLayer => MaterialLayer.Ground;
 
         private float _flammability;
 

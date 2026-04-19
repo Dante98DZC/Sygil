@@ -23,6 +23,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R11_GAS_PRODUCTION;
         public TickType TickType => TickType.STANDARD;
         public int      Priority => 5;
+        public MaterialLayer SourceLayer => MaterialLayer.Ground;
 
         private readonly float _productionRate;
         private readonly float _gasCap;

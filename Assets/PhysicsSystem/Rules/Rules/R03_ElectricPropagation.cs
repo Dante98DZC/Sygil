@@ -8,6 +8,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID Id         => RuleID.R03_ELECTRIC_PROPAGATION;
         public TickType TickType => TickType.FAST;
         public int Priority      => 7;
+        public MaterialLayer SourceLayer => MaterialLayer.Ground;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def) =>
             tile.electricEnergy > 0f;

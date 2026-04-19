@@ -34,6 +34,8 @@ namespace PhysicsSystem.Rules
         TickType TickType { get; }
         int      Priority { get; }
 
+        MaterialLayer SourceLayer { get; }
+
         bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def);
         void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs);
     }

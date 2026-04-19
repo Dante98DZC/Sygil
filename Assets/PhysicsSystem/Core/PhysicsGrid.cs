@@ -100,7 +100,19 @@ namespace PhysicsSystem.Core
             ActiveTiles.Remove(pos);
         }
 
+        public MaterialDefinition GetMaterialDef(Vector2Int pos, MaterialLayer layer)
+        {
+            var mat = layer switch
+            {
+                MaterialLayer.Ground => _grid[pos.x, pos.y].groundMaterial,
+                MaterialLayer.Liquid => _grid[pos.x, pos.y].liquidMaterial,
+                MaterialLayer.Gas => _grid[pos.x, pos.y].gasMaterial,
+                _ => MaterialType.EMPTY
+            };
+            return _library.Get(mat);
+        }
+
         public MaterialDefinition GetMaterialDef(Vector2Int pos) =>
-            _library.Get(_grid[pos.x, pos.y].material);
+            GetMaterialDef(pos, MaterialLayer.Ground);
     }
 }

@@ -33,7 +33,8 @@ namespace PhysicsSystem.Rules
             MaterialDefinition[]   neighborDefs,
             MaterialDefinition     def,
             TickType               tickType,
-            Vector2Int             pos)
+            Vector2Int             pos,
+            PhysicsGrid            grid)
         {
             if (def == null)
             {
@@ -46,12 +47,32 @@ namespace PhysicsSystem.Rules
             {
                 if (applied >= _config.maxRulesPerTile) break;
                 if (rule.TickType != tickType)          continue;
-                if (!rule.CanApply(tile, neighbors, def)) continue;
+
+                var ruleDef = GetRuleMaterialDef(rule, tile, neighbors, neighborDefs, grid, pos);
+                if (!rule.CanApply(tile, neighbors, ruleDef)) continue;
 
                 rule.Apply(ref tile, neighbors, neighborDefs);
                 OnRuleFired?.Invoke(rule.Id, pos);
                 applied++;
             }
+        }
+
+        private MaterialDefinition GetRuleMaterialDef(
+            IInteractionRule        rule,
+            TileData             tile,
+            TileData[]           neighbors,
+            MaterialDefinition[] neighborDefs,
+            PhysicsGrid        grid,
+            Vector2Int         pos)
+        {
+            var layer = rule.SourceLayer;
+            return layer switch
+            {
+                MaterialLayer.Ground => grid.GetMaterialDef(pos, MaterialLayer.Ground),
+                MaterialLayer.Liquid => grid.GetMaterialDef(pos, MaterialLayer.Liquid),
+                MaterialLayer.Gas => grid.GetMaterialDef(pos, MaterialLayer.Gas),
+                _ => grid.GetMaterialDef(pos, MaterialLayer.Ground)
+            };
         }
     }
 }

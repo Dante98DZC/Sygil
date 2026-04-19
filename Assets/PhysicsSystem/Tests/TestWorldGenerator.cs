@@ -334,7 +334,7 @@ namespace PhysicsSystem.Tests
 
         private void PlaceZone_Pressure()
         {
-            Place(16, 4, MaterialType.STONE, pressure: _pressure.centralPressure, liquidVolume: 0f);
+            Place(16, 4, MaterialType.STONE, gasDensity: _pressure.centralPressure);
             Place(15, 4, MaterialType.STONE);
             Place(17, 4, MaterialType.STONE);
             Place(16, 5, MaterialType.STONE);
@@ -421,28 +421,40 @@ namespace PhysicsSystem.Tests
         }
 
         private void Place(int x, int y, MaterialType mat,
-            float temperature        = 0f,
-            float pressure          = 0f,
-            float liquidVolume      = 0f,
-            float electricEnergy    = 0f,
-            float gasDensity        = 0f,
+            float temperature = 0f,
+            float gasDensity = 0f,
+            float liquidVolume = 0f,
+            float electricEnergy = 0f,
             float structuralIntegrity = 80f)
         {
-            var pos  = new Vector2Int(x, y);
+            var pos = new Vector2Int(x, y);
             var tile = _engine.Grid.GetTile(pos);
 
-            tile.material           = mat;
-            tile.temperature        = temperature;
-            tile.gasDensity         = gasDensity + pressure;
-            tile.liquidVolume       = liquidVolume;
-            tile.electricEnergy     = electricEnergy;
-            tile.structuralIntegrity = structuralIntegrity;
+            var state = MaterialDefinition.GetDefaultState(mat);
+            switch (state)
+            {
+                case MatterState.Liquid:
+                    tile.liquidMaterial = mat;
+                    tile.liquidVolume = liquidVolume > 0 ? liquidVolume : 100f;
+                    break;
+                case MatterState.Gas:
+                    tile.gasMaterial = mat;
+                    tile.gasDensity = gasDensity;
+                    break;
+                default:
+                    tile.groundMaterial = mat;
+                    tile.structuralIntegrity = structuralIntegrity;
+                    break;
+            }
+
+            tile.temperature = temperature;
+            tile.electricEnergy = electricEnergy;
 
             _engine.Grid.SetTile(pos, tile);
         }
 
         private void FillRow(int y, MaterialType mat,
-            float temperature        = 0f,
+            float temperature = 0f,
             float structuralIntegrity = 80f)
         {
             for (int x = 0; x < _engine.Grid.Width; x++)

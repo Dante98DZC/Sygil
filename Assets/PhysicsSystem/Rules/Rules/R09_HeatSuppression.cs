@@ -20,6 +20,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R09_HEAT_SUPPRESSION;
         public TickType TickType => TickType.STANDARD;
         public int      Priority => 4;
+        public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private const float TemperatureThreshold = 70f;
         private const float MinLiquidVolume      = 50f;   // mínimo efectivo

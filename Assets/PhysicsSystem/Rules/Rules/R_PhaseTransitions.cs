@@ -17,6 +17,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R13_MELTING;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 3;
+        public MaterialLayer SourceLayer => MaterialLayer.Ground;
 
         // Fracción de LiquidCapacity que ocupa el sólido fundido.
         // Valor conservador: el sólido no llena el tile completamente de líquido.
@@ -61,6 +62,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R14_FREEZING;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 3;
+        public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private MaterialType _solidForm;
 
@@ -102,6 +104,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R15_BOILING;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 2;
+        public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private const float GasDensityGain    = 15f;  // densidad de gas producido
         private const float NeighborDensityGain =  5f;  // presurización de vecinos
@@ -159,6 +162,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R16_CONDENSATION;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 2;
+        public MaterialLayer SourceLayer => MaterialLayer.Gas;
 
         // Volumen inicial del líquido condensado (litros)
         private const float CondensationVolume = 20f;

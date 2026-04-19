@@ -20,6 +20,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R07_STRUCTURAL_COLLAPSE;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 0;
+        public MaterialLayer SourceLayer => MaterialLayer.Ground;
 
         // Cacheado en CanApply para no recalcular en Apply
         private bool         _isMelting;

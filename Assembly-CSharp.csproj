@@ -65,6 +65,7 @@
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R03_ElectricPropagation.cs" />
     <Compile Include="Assets\PhysicsSystem\Debug\RuleEventLog.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\IInteractionRule.cs" />
+    <Compile Include="Assets\PhysicsSystem\Core\MaterialLayer.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\ISimulationModifier.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R08_SlowEvaporation.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\PowerCaster.cs" />

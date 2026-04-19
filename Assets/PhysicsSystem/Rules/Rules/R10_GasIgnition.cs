@@ -22,6 +22,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R10_GAS_IGNITION;
         public TickType TickType => TickType.STANDARD;
         public int      Priority => 2;
+        public MaterialLayer SourceLayer => MaterialLayer.Gas;
 
         private const float GasDensityThreshold = 60f;
         private const float TemperatureThreshold = 60f;

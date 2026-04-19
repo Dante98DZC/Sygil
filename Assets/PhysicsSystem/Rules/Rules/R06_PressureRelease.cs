@@ -16,6 +16,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R06_PRESSURE_RELEASE;
         public TickType TickType => TickType.INTEGRITY;
         public int      Priority => 2;
+        public MaterialLayer SourceLayer => MaterialLayer.Gas;
 
         private const float ReleaseThreshold = 80f;
 

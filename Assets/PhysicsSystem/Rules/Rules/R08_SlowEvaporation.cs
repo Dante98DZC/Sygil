@@ -20,6 +20,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R08_HUMIDITY_VAPORIZATION;
         public TickType TickType => TickType.STANDARD;
         public int      Priority => 5;
+        public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private const float TemperatureThreshold = 50f;
         private const float MinLiquidVolume      = 10f;   // mínimo para activar

@@ -8,6 +8,60 @@ namespace PhysicsSystem.Core
     public static class HeightmapGenerator
     {
         /// <summary>
+        /// Genera un heightmap + materials por defecto para un cuarto cerrado.
+        /// </summary>
+        public static (TileHeight[,] height, TileData[,] tiles) GenerateTestWorld(int width, int height)
+        {
+            var heights = GenerateStaticRoom(width, height);
+            var tiles = InitializeMaterials(heights);
+            return (heights, tiles);
+        }
+
+        /// <summary>
+        /// Inicializa materials por defecto para cada tile según su altura.
+        /// </summary>
+        public static TileData[,] InitializeMaterials(TileHeight[,] heights)
+        {
+            int w = heights.GetLength(0);
+            int h = heights.GetLength(1);
+            var tiles = new TileData[w, h];
+
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    var tile = new TileData
+                    {
+                        height             = heights[x, y],
+                        groundMaterial    = GetDefaultGround(heights[x, y]),
+                        liquidMaterial   = MaterialType.EMPTY,
+                        liquidVolume     = 0f,
+                        gasMaterial      = MaterialType.EMPTY,
+                        gasDensity      = 50f,
+                        temperature    = 20f,
+                        structuralIntegrity = 100f,
+                        electricEnergy = 0f,
+                        dirty          = false,
+                        wasEmpty       = false
+                    };
+                    tiles[x, y] = tile;
+                }
+            }
+            return tiles;
+        }
+
+        private static MaterialType GetDefaultGround(TileHeight height) => height switch
+        {
+            TileHeight.Wall   => MaterialType.STONE,
+            TileHeight.Tall   => MaterialType.STONE,
+            TileHeight.Low   => MaterialType.STONE,
+            TileHeight.Ground => MaterialType.EARTH,
+            TileHeight.Shallow => MaterialType.EMPTY,
+            TileHeight.Deep  => MaterialType.EMPTY,
+            _              => MaterialType.STONE
+        };
+
+        /// <summary>
         /// Genera un mapa con un cuarto cerrado, zona baja, media y alta.
         /// </summary>
         public static TileHeight[,] GenerateStaticRoom(int width, int height)

@@ -22,6 +22,7 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID   Id       => RuleID.R12_GAS_PRESSURE;
         public TickType TickType => TickType.STANDARD;
         public int      Priority => 6;
+        public MaterialLayer SourceLayer => MaterialLayer.Gas;
 
         private readonly float _pressureCoeff;
         private readonly float _gasBaseline;

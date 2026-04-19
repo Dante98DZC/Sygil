@@ -8,9 +8,10 @@ namespace PhysicsSystem.Rules.Rules
         public RuleID Id         => RuleID.R04_ELECTRIC_WATER;
         public TickType TickType => TickType.FAST;
         public int Priority      => 4;
+        public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def) =>
-            tile.electricEnergy > 40f && tile.material == MaterialType.WATER;
+            tile.electricEnergy > 40f && tile.liquidMaterial == MaterialType.WATER;
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
