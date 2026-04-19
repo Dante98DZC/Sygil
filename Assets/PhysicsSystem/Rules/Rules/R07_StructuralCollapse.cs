@@ -55,7 +55,7 @@ namespace PhysicsSystem.Rules.Rules
             // Presuriza vecinos — el colapso desplaza materia
             for (int i = 0; i < neighbors.Length; i++)
             {
-                neighbors[i].pressure = Mathf.Clamp(neighbors[i].pressure + 10f, 0f, 100f);
+                neighbors[i].gasDensity = Mathf.Clamp(neighbors[i].gasDensity + 10f, 0f, 100f);
                 neighbors[i].dirty    = true;
             }
 

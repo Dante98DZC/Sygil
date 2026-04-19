@@ -70,7 +70,7 @@ namespace PhysicsSystem.Core
             _ruleRegistry.AddRule(new Rules.Rules.R12_GasPressure(config.pressureFromGasCoeff, config.gasBaseline));
 
             // ── Humidity ──────────────────────────────────────────────────────
-            _ruleRegistry.AddRule(new Rules.Rules.R08_HumidityVaporization());
+            _ruleRegistry.AddRule(new Rules.Rules.R08_SlowEvaporation());
 
             // ── Phase transitions: solid ↔ liquid ↔ gas ──────────────────────
             // Priority order within INTEGRITY tick: Melting(3) = Freezing(3) > Boiling(2) = Condensation(2)

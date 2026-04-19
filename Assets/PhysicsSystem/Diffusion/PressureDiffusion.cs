@@ -15,7 +15,7 @@ namespace PhysicsSystem.Diffusion
             foreach (var pos in new List<Vector2Int>(grid.ActiveTiles))
             {
                 ref var tile = ref grid.GetTile(pos);
-                if (tile.pressure <= 0f) continue;
+                if (tile.gasDensity <= 0f) continue;
 
                 foreach (var npos in grid.GetNeighborPositions(pos))
                 {
@@ -24,11 +24,11 @@ namespace PhysicsSystem.Diffusion
                     if (nDef == null) continue;
 
                     float resistance = 1f - (neighbor.structuralIntegrity / 100f);
-                    float transfer = (tile.pressure - neighbor.pressure) * resistance * 0.25f;
+                    float transfer = (tile.gasDensity - neighbor.gasDensity) * resistance * 0.25f;
                     if (transfer <= 0f) continue;
 
-                    tile.pressure     = Mathf.Clamp(tile.pressure     - transfer, 0f, 100f);
-                    neighbor.pressure = Mathf.Clamp(neighbor.pressure + transfer, 0f, 100f);
+                    tile.gasDensity     = Mathf.Clamp(tile.gasDensity     - transfer, 0f, 100f);
+                    neighbor.gasDensity = Mathf.Clamp(neighbor.gasDensity + transfer, 0f, 100f);
                     grid.MarkDirty(npos);
                 }
             }

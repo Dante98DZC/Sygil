@@ -42,8 +42,8 @@ namespace PhysicsSystem.Rules.Rules
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
-            float delta = tile.gasDensity - _gasBaseline; // positivo o negativo
-            tile.pressure = Mathf.Clamp(tile.pressure + delta * _pressureCoeff, 0f, 100f);
+            float delta = tile.gasDensity - _gasBaseline;
+            tile.gasDensity = Mathf.Clamp(tile.gasDensity + delta * _pressureCoeff, 0f, 100f);
         }
     }
 }

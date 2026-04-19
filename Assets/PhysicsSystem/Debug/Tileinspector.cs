@@ -83,8 +83,8 @@ namespace PhysicsSystem.DebugTools
 
             // Propiedades numéricas
             DrawRow(x, ref y, "Temperatura",  $"{tile.temperature:F1}");
-            DrawRow(x, ref y, "Presión",      $"{tile.pressure:F1}");
-            DrawRow(x, ref y, "Humedad",      $"{tile.humidity:F1}");
+            DrawRow(x, ref y, "Presión",      $"{tile.gasDensity:F1}");
+            DrawRow(x, ref y, "Humedad",    $"{tile.liquidVolume:F1}");
             DrawRow(x, ref y, "Electricidad", $"{tile.electricEnergy:F1}");
             DrawRow(x, ref y, "Gas",          $"{tile.gasDensity:F1}");
             DrawRow(x, ref y, "Integridad",   $"{tile.structuralIntegrity:F1}");

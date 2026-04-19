@@ -12,7 +12,7 @@ namespace PhysicsSystem.Diffusion
     /// GasDensity — isotropic spread: gas fills space equally, no directional bias.
     ///              Propagates gasMaterial alongside numeric density.
     /// Humidity   — height-based flow: fluid moves toward lower TileHeight neighbors.
-    ///              Propagates fluidMaterial alongside numeric humidity.
+    ///              Propagates liquidMaterial alongside numeric humidity.
     /// </summary>
     public class GravityDiffusion : IDiffusionStrategy
     {
@@ -88,7 +88,7 @@ namespace PhysicsSystem.Diffusion
         }
 
         /// <summary>
-        /// Copies gasMaterial/fluidMaterial from source to neighbor once enough
+        /// Copies gasMaterial/liquidMaterial from source to neighbor once enough
         /// numeric property has transferred. Clears source layer when depleted.
         /// </summary>
         private void PropagateMaterial(ref TileData source, ref TileData neighbor)
@@ -104,22 +104,22 @@ namespace PhysicsSystem.Diffusion
             }
             else
             {
-                if (source.fluidMaterial != MaterialType.EMPTY && neighbor.fluidMaterial == MaterialType.EMPTY)
-                    if (neighbor.humidity >= 5f)
-                        neighbor.fluidMaterial = source.fluidMaterial;
+                if (source.liquidMaterial != MaterialType.EMPTY && neighbor.liquidMaterial == MaterialType.EMPTY)
+                    if (neighbor.liquidVolume >= 5f)
+                        neighbor.liquidMaterial = source.liquidMaterial;
 
-                if (source.humidity < 1f)
-                    source.fluidMaterial = MaterialType.EMPTY;
+                if (source.liquidVolume < 1f)
+                    source.liquidMaterial = MaterialType.EMPTY;
             }
         }
 
         private float GetValue(TileData t) =>
-            _property == GravityProperty.Humidity ? t.humidity : t.gasDensity;
+            _property == GravityProperty.Humidity ? t.liquidVolume : t.gasDensity;
 
         private void AddValue(ref TileData t, float delta)
         {
             if (_property == GravityProperty.Humidity)
-                t.humidity   = Mathf.Clamp(t.humidity   + delta, 0f, 100f);
+                t.liquidVolume = Mathf.Clamp(t.liquidVolume + delta, 0f, 100f);
             else
                 t.gasDensity = Mathf.Clamp(t.gasDensity + delta, 0f, 100f);
         }

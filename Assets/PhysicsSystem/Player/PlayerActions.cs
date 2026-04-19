@@ -52,13 +52,13 @@ namespace PhysicsSystem.Player
                     tile.temperature    = Mathf.Clamp(tile.temperature    + 40f, 0f, 100f);
                     break;
                 case ActionType.PRESSURE_INJECT:
-                    tile.pressure       = Mathf.Clamp(tile.pressure       + 60f, 0f, 100f);
+                    tile.gasDensity     = Mathf.Clamp(tile.gasDensity     + 60f, 0f, 100f);
                     break;
                 case ActionType.ELECTRIC_PULSE:
                     tile.electricEnergy = Mathf.Clamp(tile.electricEnergy + 80f, 0f, 100f);
                     break;
                 case ActionType.HUMIDIFIER:
-                    tile.humidity       = Mathf.Clamp(tile.humidity       + 50f, 0f, 100f);
+                    tile.liquidVolume     = Mathf.Clamp(tile.liquidVolume     + 50f, 0f, 100f);
                     break;
                 case ActionType.SEAL:
                     tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity + 40f, 0f, 100f);

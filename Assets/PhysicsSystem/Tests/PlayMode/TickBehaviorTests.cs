@@ -99,12 +99,12 @@ namespace PhysicsSystem.Tests.PlayMode
         [Test]
         public void T01_DerivedStates_ReflectPostRuleState_AfterStandardTick()
         {
-            _engine.SetTile(POS, new TileData
+_engine.SetTile(POS, new TileData
             {
                 material = MaterialType.WOOD,
-                temperature = 75f,
+                temperature = 80f,
                 structuralIntegrity = 80f,
-                humidity = 5f
+                liquidVolume = 5f
             });
 
             _engine.RunTick(TickType.STANDARD);
@@ -123,26 +123,26 @@ namespace PhysicsSystem.Tests.PlayMode
             _engine.SetTile(POS, new TileData
             {
                 material = MaterialType.STONE,
-                pressure = 50f,
+                gasDensity = 50f,
                 structuralIntegrity = 90f
             });
 
-            float pressureBefore = _engine.Grid.GetTile(POS).pressure;
+            float pressureBefore = _engine.Grid.GetTile(POS).gasDensity;
 
             _engine.RunTick(TickType.FAST);
-            Assert.AreEqual(pressureBefore, _engine.Grid.GetTile(POS).pressure, 0.01f,
+            Assert.AreEqual(pressureBefore, _engine.Grid.GetTile(POS).gasDensity, 0.01f,
                 "Decay no debe correr en FAST tick");
 
             _engine.RunTick(TickType.STANDARD);
-            Assert.AreEqual(pressureBefore, _engine.Grid.GetTile(POS).pressure, 0.01f,
+            Assert.AreEqual(pressureBefore, _engine.Grid.GetTile(POS).gasDensity, 0.01f,
                 "Decay no debe correr en STANDARD tick");
 
             _engine.RunTick(TickType.INTEGRITY);
-            Assert.AreEqual(pressureBefore, _engine.Grid.GetTile(POS).pressure, 0.01f,
+            Assert.AreEqual(pressureBefore, _engine.Grid.GetTile(POS).gasDensity, 0.01f,
                 "Decay no debe correr en INTEGRITY tick");
 
             _engine.RunTick(TickType.SLOW);
-            Assert.Less(_engine.Grid.GetTile(POS).pressure, pressureBefore,
+            Assert.Less(_engine.Grid.GetTile(POS).gasDensity, pressureBefore,
                 "Decay DEBE correr en SLOW tick");
         }
 
@@ -155,20 +155,20 @@ namespace PhysicsSystem.Tests.PlayMode
             _engine.SetTile(POS, new TileData
             {
                 material = MaterialType.STONE,
-                pressure = 80f,
+                gasDensity = 80f,
                 structuralIntegrity = 90f
             });
             _engine.SetTile(EAST, new TileData
             {
                 material = MaterialType.EMPTY,
-                pressure = 0f,
+                gasDensity = 0f,
                 structuralIntegrity = 0f
             });
 
             _engine.RunTick(TickType.SLOW);
 
-            float neighborPressure = _engine.Grid.GetTile(EAST).pressure;
-            float sourcePressure = _engine.Grid.GetTile(POS).pressure;
+            float neighborPressure = _engine.Grid.GetTile(EAST).gasDensity;
+            float sourcePressure = _engine.Grid.GetTile(POS).gasDensity;
 
             Assert.Greater(neighborPressure, 0f,
                 "Diffusion debe haber propagado presión al vecino antes de que decay la reduzca");
@@ -187,7 +187,7 @@ namespace PhysicsSystem.Tests.PlayMode
                 material = MaterialType.WOOD,
                 temperature = 80f,
                 structuralIntegrity = 80f,
-                humidity = 5f
+                liquidVolume = 5f
             });
 
             _engine.RunTick(TickType.STANDARD);
@@ -220,9 +220,8 @@ namespace PhysicsSystem.Tests.PlayMode
             _engine.SetTile(POS, new TileData
             {
                 material = MaterialType.STONE,
-                pressure = 2f,
-                structuralIntegrity = 90f,
-                gasDensity = _config.gasBaseline   // ← fix: evita inestabilidad por gasDensity=0 vs baseline=50
+                gasDensity = _config.gasBaseline,
+                structuralIntegrity = 90f
             });
 
             Assert.IsTrue(_engine.Grid.ActiveTiles.Contains(POS),
@@ -325,7 +324,7 @@ namespace PhysicsSystem.Tests.PlayMode
                 material = MaterialType.WOOD,
                 temperature = 80f,
                 structuralIntegrity = 80f,
-                humidity = 5f
+                liquidVolume = 5f
             });
 
             _engine.Grid.ActiveTiles.Clear();

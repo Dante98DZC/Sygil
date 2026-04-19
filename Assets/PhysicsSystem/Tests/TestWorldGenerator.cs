@@ -334,7 +334,7 @@ namespace PhysicsSystem.Tests
 
         private void PlaceZone_Pressure()
         {
-            Place(16, 4, MaterialType.STONE, pressure: _pressure.centralPressure);
+            Place(16, 4, MaterialType.STONE, pressure: _pressure.centralPressure, liquidVolume: 0f);
             Place(15, 4, MaterialType.STONE);
             Place(17, 4, MaterialType.STONE);
             Place(16, 5, MaterialType.STONE);
@@ -349,9 +349,9 @@ namespace PhysicsSystem.Tests
 
         private void PlaceZone_Humidity()
         {
-            Place(26, 2, MaterialType.WOOD,  temperature: _humidity.hotWoodTemperature, humidity: _humidity.waterHumidity);
+            Place(26, 2, MaterialType.WOOD,  temperature: _humidity.hotWoodTemperature, liquidVolume: _humidity.waterHumidity);
             Place(27, 2, MaterialType.WOOD,  temperature: _humidity.hotWoodTemperature);
-            Place(26, 4, MaterialType.WATER, humidity: _humidity.waterHumidity, temperature: _humidity.waterTemperature);
+            Place(26, 4, MaterialType.WATER, liquidVolume: _humidity.waterHumidity, temperature: _humidity.waterTemperature);
         }
 
         private void PlaceZone_GasIgnition()
@@ -422,10 +422,10 @@ namespace PhysicsSystem.Tests
 
         private void Place(int x, int y, MaterialType mat,
             float temperature        = 0f,
-            float pressure           = 0f,
-            float humidity           = 0f,
-            float electricEnergy     = 0f,
-            float gasDensity         = 0f,
+            float pressure          = 0f,
+            float liquidVolume      = 0f,
+            float electricEnergy    = 0f,
+            float gasDensity        = 0f,
             float structuralIntegrity = 80f)
         {
             var pos  = new Vector2Int(x, y);
@@ -433,10 +433,9 @@ namespace PhysicsSystem.Tests
 
             tile.material           = mat;
             tile.temperature        = temperature;
-            tile.pressure           = pressure;
-            tile.humidity           = humidity;
+            tile.gasDensity         = gasDensity + pressure;
+            tile.liquidVolume       = liquidVolume;
             tile.electricEnergy     = electricEnergy;
-            tile.gasDensity         = gasDensity;
             tile.structuralIntegrity = structuralIntegrity;
 
             _engine.Grid.SetTile(pos, tile);

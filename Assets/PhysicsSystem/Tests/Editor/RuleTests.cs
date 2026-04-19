@@ -274,7 +274,7 @@ namespace PhysicsSystem.Tests.Editor
             {
                 temperature        = 80f,
                 gasDensity         = 0f,
-                humidity           = 20f,
+                liquidVolume           = 20f,
                 structuralIntegrity= 80f
             };
             var def = TestHelpers.Wood();
@@ -288,7 +288,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_IncreasesGasDensity()
         {
-            var tile = new TileData { temperature = 80f, gasDensity = 0f, humidity = 20f, structuralIntegrity = 80f };
+            var tile = new TileData { temperature = 80f, gasDensity = 0f, liquidVolume = 20f, structuralIntegrity = 80f };
             var def  = TestHelpers.Wood();
             Assert.IsTrue(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), def));
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
@@ -298,17 +298,17 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_DecreasesHumidity()
         {
-            var tile = new TileData { temperature = 80f, humidity = 20f, structuralIntegrity = 80f };
+            var tile = new TileData { temperature = 80f, liquidVolume = 20f, structuralIntegrity = 80f };
             var def  = TestHelpers.Wood();
             Assert.IsTrue(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), def));
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.Less(tile.humidity, 20f);
+            Assert.Less(tile.liquidVolume, 20f);
         }
 
         [Test]
         public void Apply_DecreasesIntegrity()
         {
-            var tile = new TileData { temperature = 80f, humidity = 20f, structuralIntegrity = 80f };
+            var tile = new TileData { temperature = 80f, liquidVolume = 20f, structuralIntegrity = 80f };
             var def  = TestHelpers.Wood();
             float before = tile.structuralIntegrity;
             Assert.IsTrue(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), def));
@@ -320,11 +320,11 @@ namespace PhysicsSystem.Tests.Editor
         public void Apply_NeverExceedsCap()
         {
             // Partimos de valores al límite
-            var tile = new TileData { temperature = 99f, gasDensity = 98f, humidity = 1f, structuralIntegrity = 1f };
+            var tile = new TileData { temperature = 99f, gasDensity = 98f, liquidVolume = 1f, structuralIntegrity = 1f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.LessOrEqual(tile.temperature,         100f);
             Assert.LessOrEqual(tile.gasDensity,          100f);
-            Assert.GreaterOrEqual(tile.humidity,           0f);
+            Assert.GreaterOrEqual(tile.liquidVolume,           0f);
             Assert.GreaterOrEqual(tile.structuralIntegrity,0f);
         }
     }
@@ -363,7 +363,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_SetsMaterialToEmpty()
         {
-            var tile = new TileData { material = MaterialType.WATER, temperature = 85f, humidity = 50f };
+            var tile = new TileData { material = MaterialType.WATER, temperature = 85f, liquidVolume = 50f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.AreEqual(MaterialType.EMPTY, tile.material);
         }
@@ -371,22 +371,22 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_DecreasesHumidity()
         {
-            var tile = new TileData { material = MaterialType.WATER, temperature = 85f, humidity = 50f };
+            var tile = new TileData { material = MaterialType.WATER, temperature = 85f, liquidVolume = 50f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.Less(tile.humidity, 50f);
+            Assert.Less(tile.liquidVolume, 50f);
         }
 
         [Test]
         public void Apply_IncreasesNeighborPressure()
         {
-            var tile      = new TileData { material = MaterialType.WATER, temperature = 85f, humidity = 50f };
+            var tile      = new TileData { material = MaterialType.WATER, temperature = 85f, liquidVolume = 50f };
             var neighbors = TestHelpers.NeutralNeighbors();
             var defs      = new MaterialDefinition[] { TestHelpers.Stone(), TestHelpers.Stone(),
                                                        TestHelpers.Stone(), TestHelpers.Stone() };
             // Guardamos presión inicial (0)
             _rule.Apply(ref tile, neighbors, defs);
             foreach (var n in neighbors)
-                Assert.Greater(n.pressure, 0f, "Neighbor pressure should increase after evaporation");
+                Assert.Greater(n.gasDensity, 0f, "Neighbor gasDensity should increase after evaporation");
         }
     }
 
@@ -532,7 +532,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsFalse_WhenPressureBelow80()
         {
-            var tile      = new TileData { pressure = 79f };
+            var tile      = new TileData { gasDensity = 79f };
             var neighbors = BuildHighIntegrityNeighbors();
             Assert.IsFalse(_rule.CanApply(tile, neighbors, TestHelpers.Stone()));
         }
@@ -540,7 +540,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsFalse_WhenAnyNeighborIntegrityBelow60()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildHighIntegrityNeighbors();
             neighbors[0].structuralIntegrity = 59f; // uno débil
             Assert.IsFalse(_rule.CanApply(tile, neighbors, TestHelpers.Stone()));
@@ -549,7 +549,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsTrue_WhenHighPressureAndStrongNeighbors()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildHighIntegrityNeighbors();
             Assert.IsTrue(_rule.CanApply(tile, neighbors, TestHelpers.Stone()));
         }
@@ -557,16 +557,16 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_ReducesTilePressure()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildHighIntegrityNeighbors();
             _rule.Apply(ref tile, neighbors, TestHelpers.NeutralNeighborDefs());
-            Assert.Less(tile.pressure, 90f);
+            Assert.Less(tile.gasDensity, 90f);
         }
 
         [Test]
         public void Apply_DamagesNeighborIntegrity()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildHighIntegrityNeighbors();
             float before  = neighbors[0].structuralIntegrity;
             _rule.Apply(ref tile, neighbors, TestHelpers.NeutralNeighborDefs());
@@ -576,7 +576,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_IncreasesNeighborTemperature()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildHighIntegrityNeighbors();
             _rule.Apply(ref tile, neighbors, TestHelpers.NeutralNeighborDefs());
             foreach (var n in neighbors)
@@ -605,7 +605,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsFalse_WhenPressureBelow80()
         {
-            var tile      = new TileData { pressure = 79f };
+            var tile      = new TileData { gasDensity = 79f };
             var neighbors = BuildWeakNeighbors();
             Assert.IsFalse(_rule.CanApply(tile, neighbors, TestHelpers.Stone()));
         }
@@ -613,7 +613,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsFalse_WhenAllNeighborsStrong()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = TestHelpers.NeutralNeighbors(); // integrity = 50, que es < 60
             // Forzamos todos con integrity >= 60
             for (int i = 0; i < neighbors.Length; i++)
@@ -624,7 +624,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsTrue_WhenHighPressureAndWeakNeighbor()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildWeakNeighbors();
             Assert.IsTrue(_rule.CanApply(tile, neighbors, TestHelpers.Stone()));
         }
@@ -632,20 +632,20 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_ReducesTilePressure()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildWeakNeighbors();
             _rule.Apply(ref tile, neighbors, TestHelpers.NeutralNeighborDefs());
-            Assert.Less(tile.pressure, 90f);
+            Assert.Less(tile.gasDensity, 90f);
         }
 
         [Test]
         public void Apply_TransfersPressureToWeakestNeighbor()
         {
-            var tile      = new TileData { pressure = 90f };
+            var tile      = new TileData { gasDensity = 90f };
             var neighbors = BuildWeakNeighbors();
             // El más débil tiene integrity=20 (índice 0)
             _rule.Apply(ref tile, neighbors, TestHelpers.NeutralNeighborDefs());
-            Assert.Greater(neighbors[0].pressure, 0f, "Weakest neighbor should receive pressure");
+            Assert.Greater(neighbors[0].gasDensity, 0f, "Weakest neighbor should receive gasDensity");
         }
 
         private TileData[] BuildWeakNeighbors()
@@ -706,7 +706,7 @@ namespace PhysicsSystem.Tests.Editor
             var neighbors = TestHelpers.NeutralNeighbors();
             _rule.Apply(ref tile, neighbors, TestHelpers.NeutralNeighborDefs());
             foreach (var n in neighbors)
-                Assert.Greater(n.pressure, 0f, "Collapse should pressurize neighbors");
+                Assert.Greater(n.gasDensity, 0f, "Collapse should pressurize neighbors");
         }
 
         [Test]
@@ -733,53 +733,53 @@ namespace PhysicsSystem.Tests.Editor
     // R08 — Humidity Vaporization
     // =========================================================================
     [TestFixture]
-    public class R08_HumidityVaporizationTests
+    public class R08_SlowEvaporationTests
     {
-        private R08_HumidityVaporization _rule;
+        private R08_SlowEvaporation _rule;
 
-        [SetUp] public void SetUp() => _rule = new R08_HumidityVaporization();
+        [SetUp] public void SetUp() => _rule = new R08_SlowEvaporation();
 
         [Test]
         public void CanApply_ReturnsFalse_WhenHumidityBelow60()
         {
-            var tile = new TileData { humidity = 59f, temperature = 60f };
+            var tile = new TileData { liquidVolume = 59f, temperature = 60f };
             Assert.IsFalse(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
         }
 
         [Test]
         public void CanApply_ReturnsFalse_WhenTempBelow50()
         {
-            var tile = new TileData { humidity = 70f, temperature = 49f };
+            var tile = new TileData { liquidVolume = 70f, temperature = 49f };
             Assert.IsFalse(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
         }
 
         [Test]
         public void CanApply_ReturnsTrue_WhenBothConditionsMet()
         {
-            var tile = new TileData { humidity = 70f, temperature = 60f };
+            var tile = new TileData { liquidVolume = 70f, temperature = 60f };
             Assert.IsTrue(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
         }
 
         [Test]
         public void Apply_DecreasesHumidity()
         {
-            var tile = new TileData { humidity = 70f, temperature = 60f };
+            var tile = new TileData { liquidVolume = 70f, temperature = 60f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.Less(tile.humidity, 70f);
+            Assert.Less(tile.liquidVolume, 70f);
         }
 
         [Test]
         public void Apply_IncreasesPressure()
         {
-            var tile = new TileData { humidity = 70f, temperature = 60f, pressure = 0f };
+            var tile = new TileData { liquidVolume = 70f, temperature = 60f, gasDensity = 0f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.Greater(tile.pressure, 0f);
+            Assert.Greater(tile.gasDensity, 0f);
         }
 
         [Test]
         public void Apply_IncreasesGasDensity()
         {
-            var tile = new TileData { humidity = 70f, temperature = 60f, gasDensity = 0f };
+            var tile = new TileData { liquidVolume = 70f, temperature = 60f, gasDensity = 0f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.Greater(tile.gasDensity, 0f);
         }
@@ -798,28 +798,28 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void CanApply_ReturnsFalse_WhenTempBelow70()
         {
-            var tile = new TileData { temperature = 69f, humidity = 60f };
+            var tile = new TileData { temperature = 69f, liquidVolume = 60f };
             Assert.IsFalse(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
         }
 
         [Test]
         public void CanApply_ReturnsFalse_WhenHumidityBelow50()
         {
-            var tile = new TileData { temperature = 80f, humidity = 49f };
+            var tile = new TileData { temperature = 80f, liquidVolume = 49f };
             Assert.IsFalse(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
         }
 
         [Test]
         public void CanApply_ReturnsTrue_WhenHotAndHumid()
         {
-            var tile = new TileData { temperature = 80f, humidity = 60f };
+            var tile = new TileData { temperature = 80f, liquidVolume = 60f };
             Assert.IsTrue(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
         }
 
         [Test]
         public void Apply_DecreasesTemperature()
         {
-            var tile = new TileData { temperature = 80f, humidity = 60f };
+            var tile = new TileData { temperature = 80f, liquidVolume = 60f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.Less(tile.temperature, 80f);
         }
@@ -827,19 +827,19 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_DecreasesHumidity()
         {
-            var tile = new TileData { temperature = 80f, humidity = 60f };
+            var tile = new TileData { temperature = 80f, liquidVolume = 60f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.Less(tile.humidity, 60f);
+            Assert.Less(tile.liquidVolume, 60f);
         }
 
         [Test]
         public void Apply_TempReduction_ScalesWithHumidity()
         {
-            float humidity = 60f;
+            float liquidVolume = 60f;
             float temp     = 80f;
-            float expected = Mathf.Clamp(temp - humidity * 0.3f, 0f, 100f);
+            float expected = Mathf.Clamp(temp - liquidVolume * 0.3f, 0f, 100f);
 
-            var tile = new TileData { temperature = temp, humidity = humidity };
+            var tile = new TileData { temperature = temp, liquidVolume = liquidVolume };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.AreEqual(expected, tile.temperature, TestHelpers.Epsilon);
         }
@@ -879,7 +879,7 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_IncreasesTemperature()
         {
-            var tile = new TileData { gasDensity = 70f, temperature = 65f, pressure = 0f };
+            var tile = new TileData { gasDensity = 70f, temperature = 65f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.Greater(tile.temperature, 65f);
         }
@@ -895,9 +895,9 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void Apply_IncreasesPressure()
         {
-            var tile = new TileData { gasDensity = 70f, temperature = 65f, pressure = 0f };
+            var tile = new TileData { gasDensity = 70f, temperature = 65f };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.Greater(tile.pressure, 0f);
+            Assert.Greater(tile.gasDensity, 0f);
         }
 
         [Test]
@@ -907,7 +907,7 @@ namespace PhysicsSystem.Tests.Editor
             float temp = 65f;
             float expected = Mathf.Clamp(temp + gas * 0.4f, 0f, 100f);
 
-            var tile = new TileData { gasDensity = gas, temperature = temp, pressure = 0f };
+            var tile = new TileData { gasDensity = gas, temperature = temp };
             _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             Assert.AreEqual(expected, tile.temperature, TestHelpers.Epsilon);
         }
@@ -931,8 +931,8 @@ namespace PhysicsSystem.Tests.Editor
             var def   = TestHelpers.Wood();
             var n     = TestHelpers.NeutralNeighbors();
 
-            var tileClean = new TileData { temperature = 80f, humidity = 20f, structuralIntegrity = 80f, derivedStates = States.StateFlags.NONE };
-            var tileDirty = new TileData { temperature = 80f, humidity = 20f, structuralIntegrity = 80f, derivedStates = States.StateFlags.ON_FIRE | States.StateFlags.VOLATILE };
+            var tileClean = new TileData { temperature = 80f, liquidVolume = 20f, structuralIntegrity = 80f, derivedStates = States.StateFlags.NONE };
+            var tileDirty = new TileData { temperature = 80f, liquidVolume = 20f, structuralIntegrity = 80f, derivedStates = States.StateFlags.ON_FIRE | States.StateFlags.VOLATILE };
 
             Assert.AreEqual(rule.CanApply(tileClean, n, def), rule.CanApply(tileDirty, n, def),
                 "R01 CanApply must not depend on derivedStates (I1 violation)");
@@ -975,7 +975,7 @@ namespace PhysicsSystem.Tests.Editor
         public void R01_NeverExceedsBounds_WhenStartingAtExtremes()
         {
             var rule = new R01_Combustion();
-            var tile = new TileData { temperature = OVER, gasDensity = OVER, humidity = UNDER, structuralIntegrity = OVER };
+            var tile = new TileData { temperature = OVER, gasDensity = OVER, liquidVolume = UNDER, structuralIntegrity = OVER };
             rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             AssertClamped(tile, "R01");
         }
@@ -983,8 +983,8 @@ namespace PhysicsSystem.Tests.Editor
         [Test]
         public void R08_NeverExceedsBounds_WhenStartingAtExtremes()
         {
-            var rule = new R08_HumidityVaporization();
-            var tile = new TileData { humidity = OVER, temperature = OVER, pressure = OVER, gasDensity = OVER };
+            var rule = new R08_SlowEvaporation();
+            var tile = new TileData { liquidVolume = OVER, temperature = OVER, gasDensity = OVER };
             rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             AssertClamped(tile, "R08");
         }
@@ -993,7 +993,7 @@ namespace PhysicsSystem.Tests.Editor
         public void R10_NeverExceedsBounds_WhenStartingAtExtremes()
         {
             var rule = new R10_GasIgnition();
-            var tile = new TileData { gasDensity = OVER, temperature = OVER, pressure = OVER };
+            var tile = new TileData { gasDensity = OVER, temperature = OVER };
             rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
             AssertClamped(tile, "R10");
         }
@@ -1002,7 +1002,7 @@ namespace PhysicsSystem.Tests.Editor
         public void R05_NeighborProperties_NeverExceedBounds()
         {
             var rule      = new R05_PressureExplosion();
-            var tile      = new TileData { pressure = OVER };
+            var tile      = new TileData { gasDensity = OVER };
             var neighbors = new TileData[4];
             for (int i = 0; i < 4; i++)
                 neighbors[i] = new TileData { structuralIntegrity = 80f, temperature = 0f, gasDensity = 0f };
@@ -1015,10 +1015,10 @@ namespace PhysicsSystem.Tests.Editor
         {
             Assert.LessOrEqual(t.temperature,          100f, $"{label}: temperature > 100");
             Assert.GreaterOrEqual(t.temperature,         0f, $"{label}: temperature < 0");
-            Assert.LessOrEqual(t.pressure,             100f, $"{label}: pressure > 100");
-            Assert.GreaterOrEqual(t.pressure,            0f, $"{label}: pressure < 0");
-            Assert.LessOrEqual(t.humidity,             100f, $"{label}: humidity > 100");
-            Assert.GreaterOrEqual(t.humidity,            0f, $"{label}: humidity < 0");
+            Assert.LessOrEqual(t.gasDensity,             100f, $"{label}: gasDensity > 100");
+            Assert.GreaterOrEqual(t.gasDensity,            0f, $"{label}: gasDensity < 0");
+            Assert.LessOrEqual(t.liquidVolume,             100f, $"{label}: liquidVolume > 100");
+            Assert.GreaterOrEqual(t.liquidVolume,            0f, $"{label}: liquidVolume < 0");
             Assert.LessOrEqual(t.electricEnergy,       100f, $"{label}: electricEnergy > 100");
             Assert.GreaterOrEqual(t.electricEnergy,      0f, $"{label}: electricEnergy < 0");
             Assert.LessOrEqual(t.gasDensity,           100f, $"{label}: gasDensity > 100");

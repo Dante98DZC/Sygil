@@ -42,8 +42,8 @@ namespace PhysicsSystem.Renderer
             {
                 OverlayMode.None             => Color.clear,
                 OverlayMode.Temperature      => Temperature(tile.temperature),
-                OverlayMode.Pressure         => SimpleGradient(tile.pressure,      _colorPressure),
-                OverlayMode.Humidity         => SimpleGradient(tile.humidity,       _colorHumidity),
+                OverlayMode.Pressure         => SimpleGradient(tile.gasDensity,   _colorPressure),
+                OverlayMode.Humidity         => SimpleGradient(tile.liquidVolume, _colorHumidity),
                 OverlayMode.ElectricEnergy   => ElectricGradient(tile.electricEnergy),
                 OverlayMode.GasDensity       => SimpleGradient(tile.gasDensity,     _colorGas),
                 OverlayMode.StructuralDamage => StructuralDamage(tile.structuralIntegrity),
@@ -159,7 +159,7 @@ namespace PhysicsSystem.Renderer
         private static Color Combined(TileData tile)
         {
             float temp  = tile.temperature    / 100f;
-            float press = tile.pressure       / 100f;
+            float press = tile.gasDensity    / 100f;
             float elec  = tile.electricEnergy / 100f;
             float gas   = tile.gasDensity     / 100f;
 

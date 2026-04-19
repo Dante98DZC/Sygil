@@ -28,10 +28,10 @@ namespace PhysicsSystem.States
                 if (tile.electricEnergy > 50f)
                     flags |= StateFlags.ELECTRIFIED;
 
-                if (tile.pressure > 60f)
+                if (tile.gasDensity > 60f)
                     flags |= StateFlags.PRESSURIZED;
 
-                if (tile.humidity > 70f && tile.material != MaterialType.WATER)
+                if (tile.liquidVolume > 70f && tile.material != MaterialType.WATER)
                     flags |= StateFlags.FLOODED;
 
                 if (tile.structuralIntegrity < 30f)

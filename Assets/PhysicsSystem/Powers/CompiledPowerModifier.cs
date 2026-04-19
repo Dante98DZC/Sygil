@@ -218,9 +218,9 @@ namespace PhysicsSystem.Powers
                 case PropertyTarget.Temperature:
                     tile.temperature        = Mathf.Clamp(tile.temperature        + delta, 0f, 100f); break;
                 case PropertyTarget.Pressure:
-                    tile.pressure           = Mathf.Clamp(tile.pressure           + delta, 0f, 100f); break;
+                    tile.gasDensity         = Mathf.Clamp(tile.gasDensity         + delta, 0f, 100f); break;
                 case PropertyTarget.Humidity:
-                    tile.humidity           = Mathf.Clamp(tile.humidity           + delta, 0f, 100f); break;
+                    tile.liquidVolume       = Mathf.Clamp(tile.liquidVolume       + delta, 0f, 100f); break;
                 case PropertyTarget.ElectricEnergy:
                     tile.electricEnergy     = Mathf.Clamp(tile.electricEnergy     + delta, 0f, 100f); break;
                 case PropertyTarget.GasDensity:
@@ -233,8 +233,8 @@ namespace PhysicsSystem.Powers
         private static float ReadProperty(TileData tile, PropertyTarget target) => target switch
         {
             PropertyTarget.Temperature        => tile.temperature,
-            PropertyTarget.Pressure           => tile.pressure,
-            PropertyTarget.Humidity           => tile.humidity,
+            PropertyTarget.Pressure           => tile.gasDensity,
+            PropertyTarget.Humidity           => tile.liquidVolume,
             PropertyTarget.ElectricEnergy     => tile.electricEnergy,
             PropertyTarget.GasDensity         => tile.gasDensity,
             PropertyTarget.StructuralIntegrity => tile.structuralIntegrity,
