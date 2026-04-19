@@ -75,9 +75,9 @@ namespace PhysicsSystem.Tests.PlayMode
             // Grid neutral: STONE con integrity=90 en toda la grilla
             var neutral = new TileData
             {
-                material = MaterialType.STONE,
+                groundMaterial = MaterialType.STONE,
                 structuralIntegrity = 90f,
-                gasDensity = _config.gasBaseline  // ← agregar esta línea
+                gasDensity = _config.gasBaseline
             };
             for (int x = 0; x < 16; x++)
                 for (int y = 0; y < 16; y++)
@@ -96,12 +96,12 @@ namespace PhysicsSystem.Tests.PlayMode
         // =========================================================================
         // T01 — DerivedStates se calculan DESPUÉS de las reglas en el mismo tick
         // =========================================================================
-        [Test]
+[Test]
         public void T01_DerivedStates_ReflectPostRuleState_AfterStandardTick()
         {
-_engine.SetTile(POS, new TileData
+            _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.WOOD,
+                groundMaterial = MaterialType.WOOD,
                 temperature = 80f,
                 structuralIntegrity = 80f,
                 liquidVolume = 5f
@@ -122,7 +122,7 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.STONE,
+                groundMaterial = MaterialType.STONE,
                 gasDensity = 50f,
                 structuralIntegrity = 90f
             });
@@ -154,13 +154,13 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.STONE,
+                groundMaterial = MaterialType.STONE,
                 gasDensity = 80f,
                 structuralIntegrity = 90f
             });
             _engine.SetTile(EAST, new TileData
             {
-                material = MaterialType.EMPTY,
+                groundMaterial = MaterialType.EMPTY,
                 gasDensity = 0f,
                 structuralIntegrity = 0f
             });
@@ -184,7 +184,7 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.WOOD,
+                groundMaterial = MaterialType.WOOD,
                 temperature = 80f,
                 structuralIntegrity = 80f,
                 liquidVolume = 5f
@@ -206,7 +206,7 @@ _engine.SetTile(POS, new TileData
         [Test]
         public void T05_ActiveTiles_TileEnters_WhenPropertyChanges()
         {
-            _engine.SetTile(POS, new TileData { material = MaterialType.METAL, temperature = 50f });
+            _engine.SetTile(POS, new TileData { groundMaterial = MaterialType.METAL, temperature = 50f });
             Assert.IsTrue(_engine.Grid.ActiveTiles.Contains(POS),
                 "Tile debe entrar en ActiveTiles al ser modificado");
         }
@@ -219,7 +219,7 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.STONE,
+                groundMaterial = MaterialType.STONE,
                 gasDensity = _config.gasBaseline,
                 structuralIntegrity = 90f
             });
@@ -241,13 +241,13 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.METAL,
+                groundMaterial = MaterialType.METAL,
                 electricEnergy = 80f,
                 structuralIntegrity = 100f
             });
             _engine.SetTile(EAST, new TileData
             {
-                material = MaterialType.METAL,
+                groundMaterial = MaterialType.METAL,
                 electricEnergy = 0f,
                 structuralIntegrity = 100f
             });
@@ -270,14 +270,14 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.WOOD,
+                groundMaterial = MaterialType.WOOD,
                 structuralIntegrity = 5f
             });
 
             _engine.RunTick(TickType.FAST);
 
             var tile = _engine.Grid.GetTile(POS);
-            Assert.AreEqual(MaterialType.WOOD, tile.material,
+            Assert.AreEqual(MaterialType.WOOD, tile.groundMaterial,
                 "R07 (INTEGRITY) no debe ejecutarse en tick FAST — tile no debe colapsar");
         }
 
@@ -289,7 +289,7 @@ _engine.SetTile(POS, new TileData
         {
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.WOOD,
+                groundMaterial = MaterialType.WOOD,
                 structuralIntegrity = 5f
             });
             _engine.Grid.ActiveTiles.Clear();
@@ -298,7 +298,7 @@ _engine.SetTile(POS, new TileData
             _engine.RunTick(TickType.INTEGRITY);
 
             var tile = _engine.Grid.GetTile(POS);
-            Assert.AreEqual(MaterialType.EARTH, tile.material,
+            Assert.AreEqual(MaterialType.EARTH, tile.groundMaterial,
                 "R07 debe ejecutarse en tick INTEGRITY y colapsar WOOD a EARTH (collapseInto)");
         }
 
@@ -321,7 +321,7 @@ _engine.SetTile(POS, new TileData
 
             _engine.SetTile(POS, new TileData
             {
-                material = MaterialType.WOOD,
+                groundMaterial = MaterialType.WOOD,
                 temperature = 80f,
                 structuralIntegrity = 80f,
                 liquidVolume = 5f
@@ -351,7 +351,7 @@ _engine.SetTile(POS, new TileData
         /// </summary>
         private void IsolateTile(Vector2Int pos)
         {
-            var empty = new TileData { material = MaterialType.EMPTY };
+            var empty = new TileData { groundMaterial = MaterialType.EMPTY };
             _engine.Grid.SetTile(pos + Vector2Int.up, empty);
             _engine.Grid.SetTile(pos + Vector2Int.down, empty);
             _engine.Grid.SetTile(pos + Vector2Int.left, empty);

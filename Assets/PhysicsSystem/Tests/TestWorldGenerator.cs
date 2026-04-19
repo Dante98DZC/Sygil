@@ -46,11 +46,11 @@ namespace PhysicsSystem.Tests
     [System.Serializable]
     public struct ZoneParams_Pressure
     {
-        [Range(0f, 100f)] public float centralPressure;
+        [Range(0f, 100f)] public float centralGasDensity;
 
         public static ZoneParams_Pressure Default => new ZoneParams_Pressure
         {
-            centralPressure = 95f,
+            centralGasDensity = 95f,
         };
     }
 
@@ -71,13 +71,13 @@ namespace PhysicsSystem.Tests
     public struct ZoneParams_Humidity
     {
         [Range(0f, 100f)] public float hotWoodTemperature;
-        [Range(0f, 100f)] public float waterHumidity;
+        [Range(0f, 100f)] public float waterVolume;
         [Range(0f, 100f)] public float waterTemperature;
 
         public static ZoneParams_Humidity Default => new ZoneParams_Humidity
         {
             hotWoodTemperature = 85f,
-            waterHumidity      = 90f,
+            waterVolume        = 90f,
             waterTemperature   = 75f,
         };
     }
@@ -106,9 +106,61 @@ namespace PhysicsSystem.Tests
         };
     }
 
-    // ── Escenarios predefinidos ───────────────────────────────────────────────
+    [System.Serializable]
+    public struct ZoneParams_Melting
+    {
+        [Range(0f, 100f)] public float temperature;
+        [Range(0f, 100f)] public float liquidVolume;
+
+        public static ZoneParams_Melting Default => new ZoneParams_Melting
+        {
+            temperature  = 95f,
+            liquidVolume = 50f,
+        };
+    }
 
     [System.Serializable]
+    public struct ZoneParams_Freezing
+    {
+        [Range(0f, 100f)] public float temperature;
+        [Range(0f, 100f)] public float liquidVolume;
+
+        public static ZoneParams_Freezing Default => new ZoneParams_Freezing
+        {
+            temperature  = 5f,
+            liquidVolume = 100f,
+        };
+    }
+
+    [System.Serializable]
+    public struct ZoneParams_Boiling
+    {
+        [Range(0f, 100f)] public float temperature;
+        [Range(0f, 100f)] public float liquidVolume;
+
+        public static ZoneParams_Boiling Default => new ZoneParams_Boiling
+        {
+            temperature  = 85f,
+            liquidVolume = 80f,
+        };
+    }
+
+    [System.Serializable]
+    public struct ZoneParams_Condensation
+    {
+        [Range(0f, 100f)] public float temperature;
+        [Range(0f, 100f)] public float gasDensity;
+
+        public static ZoneParams_Condensation Default => new ZoneParams_Condensation
+        {
+            temperature = 25f,
+            gasDensity  = 70f,
+        };
+    }
+
+    // ── Escenarios predefinidos ───────────────────────────────────────────────
+
+[System.Serializable]
     public struct ScenarioPreset
     {
         public string name;
@@ -119,16 +171,24 @@ namespace PhysicsSystem.Tests
         public bool   enableStructural;
         public bool   enableHumidity;
         public bool   enableGasIgnition;
+        public bool   enableMelting;
+        public bool   enableFreezing;
+        public bool   enableBoiling;
+        public bool   enableCondensation;
         public bool   useHeightmap;
 
-        public ZoneParams_Combustion combustion;
-        public ZoneParams_Evaporation evaporation;
-        public ZoneParams_Electric   electric;
-        public ZoneParams_Pressure   pressure;
-        public ZoneParams_Structural structural;
-        public ZoneParams_Humidity   humidity;
-        public ZoneParams_GasIgnition gasIgnition;
-        public ZoneParams_Gas        gas;
+        public ZoneParams_Combustion   combustion;
+        public ZoneParams_Evaporation  evaporation;
+        public ZoneParams_Electric      electric;
+        public ZoneParams_Pressure      pressure;
+        public ZoneParams_Structural   structural;
+        public ZoneParams_Humidity     humidity;
+        public ZoneParams_GasIgnition   gasIgnition;
+        public ZoneParams_Gas          gas;
+        public ZoneParams_Melting      melting;
+        public ZoneParams_Freezing     freezing;
+        public ZoneParams_Boiling      boiling;
+        public ZoneParams_Condensation condensation;
     }
 
     // ── Generador principal ───────────────────────────────────────────────────
@@ -153,26 +213,34 @@ namespace PhysicsSystem.Tests
         // ── Toggles de zona ──────────────────────────────────────────────────
 
         [Header("Zonas activas")]
-        [SerializeField] private bool _zone_combustion  = true;
-        [SerializeField] private bool _zone_evaporation = true;
-        [SerializeField] private bool _zone_electric    = true;
-        [SerializeField] private bool _zone_pressure    = true;
-        [SerializeField] private bool _zone_structural  = true;
-        [SerializeField] private bool _zone_humidity    = true;
-        [SerializeField] private bool _zone_gasIgnition = true;
+        [SerializeField] private bool _zone_combustion    = true;
+        [SerializeField] private bool _zone_evaporation   = true;
+        [SerializeField] private bool _zone_electric      = true;
+        [SerializeField] private bool _zone_pressure      = true;
+        [SerializeField] private bool _zone_structural   = true;
+        [SerializeField] private bool _zone_humidity     = true;
+        [SerializeField] private bool _zone_gasIgnition   = true;
+        [SerializeField] private bool _zone_melting      = true;
+        [SerializeField] private bool _zone_freezing     = true;
+        [SerializeField] private bool _zone_boiling      = true;
+        [SerializeField] private bool _zone_condensation = true;
         [SerializeField] private bool _useHeightmap     = true;
 
         // ── Parámetros por zona ───────────────────────────────────────────────
 
         [Header("Parámetros por zona")]
-        [SerializeField] private ZoneParams_Combustion  _combustion  = ZoneParams_Combustion.Default;
-        [SerializeField] private ZoneParams_Evaporation _evaporation = ZoneParams_Evaporation.Default;
-        [SerializeField] private ZoneParams_Electric    _electric    = ZoneParams_Electric.Default;
-        [SerializeField] private ZoneParams_Pressure    _pressure    = ZoneParams_Pressure.Default;
-        [SerializeField] private ZoneParams_Structural  _structural  = ZoneParams_Structural.Default;
-        [SerializeField] private ZoneParams_Humidity    _humidity    = ZoneParams_Humidity.Default;
-        [SerializeField] private ZoneParams_GasIgnition _gasIgnition = ZoneParams_GasIgnition.Default;
-        [SerializeField] private ZoneParams_Gas         _gas         = ZoneParams_Gas.Default;
+        [SerializeField] private ZoneParams_Combustion   _combustion    = ZoneParams_Combustion.Default;
+        [SerializeField] private ZoneParams_Evaporation  _evaporation  = ZoneParams_Evaporation.Default;
+        [SerializeField] private ZoneParams_Electric      _electric     = ZoneParams_Electric.Default;
+        [SerializeField] private ZoneParams_Pressure      _pressure     = ZoneParams_Pressure.Default;
+        [SerializeField] private ZoneParams_Structural    _structural   = ZoneParams_Structural.Default;
+        [SerializeField] private ZoneParams_Humidity       _humidity      = ZoneParams_Humidity.Default;
+        [SerializeField] private ZoneParams_GasIgnition  _gasIgnition   = ZoneParams_GasIgnition.Default;
+        [SerializeField] private ZoneParams_Gas           _gas          = ZoneParams_Gas.Default;
+        [SerializeField] private ZoneParams_Melting      _melting      = ZoneParams_Melting.Default;
+        [SerializeField] private ZoneParams_Freezing    _freezing    = ZoneParams_Freezing.Default;
+        [SerializeField] private ZoneParams_Boiling     _boiling    = ZoneParams_Boiling.Default;
+        [SerializeField] private ZoneParams_Condensation _condensation = ZoneParams_Condensation.Default;
 
         // ── Escenarios ───────────────────────────────────────────────────────
 
@@ -194,6 +262,10 @@ namespace PhysicsSystem.Tests
             ("R07 Structural",         new Vector2Int(22, 3)),
             ("R08+09 Humidity",        new Vector2Int(26, 3)),
             ("R10 GasIgnition",        new Vector2Int(6,  7)),
+            ("R13 Melting",            new Vector2Int(30, 3)),
+            ("R14 Freezing",           new Vector2Int(30, 5)),
+            ("R15 Boiling",            new Vector2Int(30, 7)),
+            ("R16 Condensation",      new Vector2Int(30, 9)),
         };
 
         private GUIStyle _labelStyle;
@@ -265,23 +337,31 @@ namespace PhysicsSystem.Tests
 
         public void LoadPreset(ScenarioPreset preset)
         {
-            _zone_combustion  = preset.enableCombustion;
-            _zone_evaporation = preset.enableEvaporation;
-            _zone_electric    = preset.enableElectric;
-            _zone_pressure    = preset.enablePressure;
-            _zone_structural  = preset.enableStructural;
-            _zone_humidity    = preset.enableHumidity;
-            _zone_gasIgnition = preset.enableGasIgnition;
-            _useHeightmap     = preset.useHeightmap;
+            _zone_combustion      = preset.enableCombustion;
+            _zone_evaporation   = preset.enableEvaporation;
+            _zone_electric      = preset.enableElectric;
+            _zone_pressure      = preset.enablePressure;
+            _zone_structural   = preset.enableStructural;
+            _zone_humidity      = preset.enableHumidity;
+            _zone_gasIgnition   = preset.enableGasIgnition;
+            _zone_melting       = preset.enableMelting;
+            _zone_freezing     = preset.enableFreezing;
+            _zone_boiling      = preset.enableBoiling;
+            _zone_condensation = preset.enableCondensation;
+            _useHeightmap      = preset.useHeightmap;
 
-            _combustion  = preset.combustion;
-            _evaporation = preset.evaporation;
-            _electric    = preset.electric;
-            _pressure    = preset.pressure;
-            _structural  = preset.structural;
-            _humidity    = preset.humidity;
-            _gasIgnition = preset.gasIgnition;
-            _gas         = preset.gas;
+            _combustion     = preset.combustion;
+            _evaporation  = preset.evaporation;
+            _electric     = preset.electric;
+            _pressure     = preset.pressure;
+            _structural   = preset.structural;
+            _humidity     = preset.humidity;
+            _gasIgnition  = preset.gasIgnition;
+            _gas          = preset.gas;
+            _melting     = preset.melting;
+            _freezing   = preset.freezing;
+            _boiling    = preset.boiling;
+            _condensation = preset.condensation;
 
             Reset();
             Debug.Log($"[TestWorldGenerator] Escenario cargado: '{preset.name}'");
@@ -297,13 +377,17 @@ namespace PhysicsSystem.Tests
             FillGasLayer();
             FillRow(0, MaterialType.STONE, structuralIntegrity: 100f);
 
-            if (_zone_combustion)  PlaceZone_Combustion();
-            if (_zone_evaporation) PlaceZone_Evaporation();
-            if (_zone_electric)    PlaceZone_Electric();
+            if (_zone_combustion)    PlaceZone_Combustion();
+            if (_zone_evaporation)  PlaceZone_Evaporation();
+            if (_zone_electric)      PlaceZone_Electric();
             if (_zone_pressure)    PlaceZone_Pressure();
-            if (_zone_structural)  PlaceZone_Structural();
+            if (_zone_structural)   PlaceZone_Structural();
             if (_zone_humidity)    PlaceZone_Humidity();
             if (_zone_gasIgnition) PlaceZone_GasIgnition();
+            if (_zone_melting)    PlaceZone_Melting();
+            if (_zone_freezing)   PlaceZone_Freezing();
+            if (_zone_boiling)    PlaceZone_Boiling();
+            if (_zone_condensation) PlaceZone_Condensation();
 
             Debug.Log($"[TestWorldGenerator] Mundo generado. ActiveTiles: {_engine.Grid.ActiveTiles.Count}");
             _renderer?.Refresh();
@@ -334,7 +418,7 @@ namespace PhysicsSystem.Tests
 
         private void PlaceZone_Pressure()
         {
-            Place(16, 4, MaterialType.STONE, gasDensity: _pressure.centralPressure);
+            Place(16, 4, MaterialType.STONE, gasDensity: _pressure.centralGasDensity);
             Place(15, 4, MaterialType.STONE);
             Place(17, 4, MaterialType.STONE);
             Place(16, 5, MaterialType.STONE);
@@ -349,9 +433,9 @@ namespace PhysicsSystem.Tests
 
         private void PlaceZone_Humidity()
         {
-            Place(26, 2, MaterialType.WOOD,  temperature: _humidity.hotWoodTemperature, liquidVolume: _humidity.waterHumidity);
+            Place(26, 2, MaterialType.WOOD,  temperature: _humidity.hotWoodTemperature, liquidVolume: _humidity.waterVolume);
             Place(27, 2, MaterialType.WOOD,  temperature: _humidity.hotWoodTemperature);
-            Place(26, 4, MaterialType.WATER, liquidVolume: _humidity.waterHumidity, temperature: _humidity.waterTemperature);
+            Place(26, 4, MaterialType.WATER, liquidVolume: _humidity.waterVolume, temperature: _humidity.waterTemperature);
         }
 
         private void PlaceZone_GasIgnition()
@@ -359,6 +443,31 @@ namespace PhysicsSystem.Tests
             Place(5, 7, MaterialType.GAS, gasDensity: _gasIgnition.gasDensity, temperature: _gasIgnition.gasTemperature);
             Place(6, 7, MaterialType.GAS, gasDensity: _gasIgnition.gasDensity, temperature: _gasIgnition.gasTemperature);
             Place(7, 7, MaterialType.GAS, gasDensity: _gasIgnition.gasDensity);
+        }
+
+        private void PlaceZone_Melting()
+        {
+            Place(30, 3, MaterialType.STONE, temperature: _melting.temperature);
+            Place(31, 3, MaterialType.METAL, temperature: _melting.temperature);
+            Place(30, 4, MaterialType.STONE, temperature: _melting.temperature, liquidVolume: _melting.liquidVolume);
+        }
+
+        private void PlaceZone_Freezing()
+        {
+            Place(30, 5, MaterialType.WATER, temperature: _freezing.temperature, liquidVolume: _freezing.liquidVolume);
+            Place(31, 5, MaterialType.WATER, temperature: _freezing.temperature);
+        }
+
+        private void PlaceZone_Boiling()
+        {
+            Place(30, 7, MaterialType.WATER, temperature: _boiling.temperature, liquidVolume: _boiling.liquidVolume);
+            Place(31, 7, MaterialType.WATER, temperature: _boiling.temperature, liquidVolume: _boiling.liquidVolume);
+        }
+
+        private void PlaceZone_Condensation()
+        {
+            Place(30, 9, MaterialType.STEAM, temperature: _condensation.temperature, gasDensity: _condensation.gasDensity);
+            Place(31, 9, MaterialType.STEAM, temperature: _condensation.temperature, gasDensity: _condensation.gasDensity);
         }
 
         // ── Heightmap ────────────────────────────────────────────────────────
@@ -375,8 +484,8 @@ namespace PhysicsSystem.Tests
                 var pos  = new Vector2Int(x, y);
                 var tile = _engine.Grid.GetTile(pos);
 
-                tile.height   = heightmap[x, y];
-                tile.material = HeightToMaterial(heightmap[x, y]);
+                tile.height = heightmap[x, y];
+                tile.groundMaterial = HeightToMaterial(heightmap[x, y]);
                 tile.structuralIntegrity = HeightToIntegrity(heightmap[x, y]);
 
                 _engine.Grid.SetTile(pos, tile);
@@ -388,11 +497,11 @@ namespace PhysicsSystem.Tests
             switch (height)
             {
                 case TileHeight.Wall:
-                case TileHeight.Tall:    return MaterialType.STONE;
-                case TileHeight.Low:     return MaterialType.EARTH;
+                case TileHeight.Tall:   return MaterialType.STONE;
+                case TileHeight.Low:    return MaterialType.EARTH;
                 case TileHeight.Shallow:
-                case TileHeight.Deep:    return MaterialType.WATER;
-                default:                 return MaterialType.EMPTY;
+                case TileHeight.Deep:   return MaterialType.WATER;
+                default:               return MaterialType.EMPTY;
             }
         }
 
