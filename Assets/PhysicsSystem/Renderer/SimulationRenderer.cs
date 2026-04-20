@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using PhysicsSystem.Core;
 using PhysicsSystem.Bridge;
+using PhysicsSystem.States;
 
 namespace PhysicsSystem.Renderer
 {
@@ -18,6 +19,8 @@ namespace PhysicsSystem.Renderer
         [Header("Visual Settings")]
         [SerializeField] private float _liquidOpacityScale = 0.5f;
         [SerializeField] private float _gasOpacityScale = 0.35f;
+        [SerializeField] private float _fireOpacityScale = 0.6f;
+        [SerializeField] private Color _fireColor = new Color(1f, 0.4f, 0.0f);
 
         private EngineNotifier _notifier;
 
@@ -105,16 +108,42 @@ namespace PhysicsSystem.Renderer
                     }
                 }
 
-                // Capa de gas: transparencia según densidad
-                if (tile.gasMaterial != MaterialType.EMPTY && tile.gasDensity > 0f)
+                // Capa de gas + fuego combinado
+                bool hasGas = tile.gasMaterial != MaterialType.EMPTY && tile.gasDensity > 0f;
+                bool hasFire = (tile.derivedStates & StateFlags.ON_FIRE) != 0;
+
+                if (hasGas || hasFire)
                 {
-                    var gasTile = _visualLibrary.Get(tile.gasMaterial);
-                    if (gasTile != null)
+                    if (hasGas)
                     {
-                        _gasTilemap.SetTile(tilemapPos, gasTile);
-                        float opacity = Mathf.Clamp01(tile.gasDensity / 100f) * _gasOpacityScale;
-                        _gasTilemap.SetTileFlags(tilemapPos, TileFlags.None);
-                        _gasTilemap.SetColor(tilemapPos, new Color(1f, 1f, 1f, opacity));
+                        var gasTile = _visualLibrary.Get(tile.gasMaterial);
+                        if (gasTile != null)
+                        {
+                            _gasTilemap.SetTile(tilemapPos, gasTile);
+                        }
+                    }
+
+                    _gasTilemap.SetTileFlags(tilemapPos, TileFlags.None);
+
+                    if (hasGas && hasFire)
+                    {
+                        float gasOpacity = Mathf.Clamp01(tile.gasDensity / 100f) * _gasOpacityScale;
+                        float fireOpacity = _fireOpacityScale * (tile.temperature / 100f);
+                        float combinedAlpha = Mathf.Clamp01(gasOpacity + fireOpacity);
+                        Color baseColor = hasGas ? Color.white : _fireColor;
+                        baseColor.a = combinedAlpha;
+                        _gasTilemap.SetColor(tilemapPos, baseColor);
+                    }
+                    else if (hasFire)
+                    {
+                        Color fireColor = _fireColor;
+                        fireColor.a = _fireOpacityScale * (tile.temperature / 100f);
+                        _gasTilemap.SetColor(tilemapPos, fireColor);
+                    }
+                    else
+                    {
+                        float gasOpacity = Mathf.Clamp01(tile.gasDensity / 100f) * _gasOpacityScale;
+                        _gasTilemap.SetColor(tilemapPos, new Color(1f, 1f, 1f, gasOpacity));
                     }
                 }
             }

@@ -1,6 +1,7 @@
 // Assets/PhysicsSystem/Rules/Rules/R01_Combustion.cs
 using UnityEngine;
 using PhysicsSystem.Core;
+using PhysicsSystem.States;
 
 namespace PhysicsSystem.Rules.Rules
 {
@@ -11,14 +12,15 @@ namespace PhysicsSystem.Rules.Rules
     /// flammabilityCoeff es suficientemente alto.
     ///
     /// Efectos por tick de combustión:
+    ///   - Establece ON_FIRE en derivedStates (para respuesta visual)
     ///   - Sube temperatura (el fuego genera calor)
-    ///   - Sube gasDensity (gases de combustión)
+    ///   - Establece gasMaterial a smokeForm (gases de combustión)
     ///   - Daña structuralIntegrity (el material se consume)
     ///
     /// La combustión completa (integridad → 0) activa R07 que escribe
-    /// burnInto en groundMaterial y smokeForm en gasMaterial.
+    /// burnInto en groundMaterial.
     ///
-    /// v4: elimina escrituras de humidity y pressure (campos removidos).
+    /// v4: usa layers, no materialobsoleto.
     /// </summary>
     public class R01_Combustion : IInteractionRule
     {
@@ -28,28 +30,52 @@ namespace PhysicsSystem.Rules.Rules
         public MaterialLayer SourceLayer => MaterialLayer.Ground;
 
         private float _flammability;
+        private MaterialType _smokeForm;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
+            if (def == null)                                   return false;
             if (def.ignitionTemperature <= 0f)               return false;
             if (tile.temperature <= def.ignitionTemperature)  return false;
             if (def.flammabilityCoeff   <= 0.5f)             return false;
 
             _flammability = def.flammabilityCoeff;
+            _smokeForm   = def.smokeForm;
             return true;
         }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
             float f = _flammability;
+            if (f <= 0f)
+            {
+                f = 0.5f;
+            }
 
-            tile.temperature         = Mathf.Clamp(tile.temperature         + 5f * f, 0f, 100f);
-            tile.gasDensity          = Mathf.Clamp(tile.gasDensity          + 3f * f, 0f, 100f);
-            tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity - 2f * f, 0f, 100f);
+            var smoke = _smokeForm;
+            if (smoke == MaterialType.EMPTY)
+            {
+                smoke = MaterialType.SMOKE;
+            }
 
-            // clamp_all — propiedades no modificadas por esta regla
+            tile.temperature         = Mathf.Clamp(tile.temperature         + 8f * f, 0f, 100f);
+            tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity - 3f * f, 0f, 100f);
+
+            if (smoke != MaterialType.EMPTY)
+            {
+                tile.gasMaterial  = smoke;
+                tile.gasDensity  = Mathf.Clamp(tile.gasDensity + 5f * f, 0f, 100f);
+            }
+
+            tile.derivedStates |= StateFlags.ON_FIRE;
+
+            if (tile.structuralIntegrity <= 0f)
+            {
+                tile.derivedStates &= ~StateFlags.ON_FIRE;
+            }
+
             tile.electricEnergy = Mathf.Clamp(tile.electricEnergy, 0f, 100f);
-            tile.liquidVolume   = Mathf.Clamp(tile.liquidVolume,   0f, tile.LiquidCapacity);
+            tile.liquidVolume = Mathf.Clamp(tile.liquidVolume, 0f, tile.LiquidCapacity);
         }
     }
 }

@@ -127,8 +127,11 @@ namespace PhysicsSystem.Core
             {
                 ref var tile     = ref Grid.GetTile(pos);
                 var neighbors    = Grid.GetNeighborsFromFrozen(pos, frozen);
-                var neighborDefs = GetNeighborDefs(pos, MaterialLayer.Ground);
-                var def          = Grid.GetMaterialDef(pos, MaterialLayer.Ground);
+                var activeLayer = tile.liquidMaterial != MaterialType.EMPTY ? MaterialLayer.Liquid
+                            : tile.gasMaterial != MaterialType.EMPTY ? MaterialLayer.Gas
+                            : MaterialLayer.Ground;
+                var neighborDefs = GetNeighborDefs(pos, activeLayer);
+                var def          = Grid.GetMaterialDef(pos, activeLayer);
 
                 _ruleRegistry.Evaluate(ref tile, neighbors, neighborDefs, def, tickType, pos, Grid);
                 Grid.WriteNeighbors(pos, neighbors);

@@ -38,7 +38,6 @@ namespace PhysicsSystem.Rules
         {
             if (def == null)
             {
-                Debug.LogWarning($"[RuleRegistry] def null para material: {tile.material}");
                 return;
             }
 

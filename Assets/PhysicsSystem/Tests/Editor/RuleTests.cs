@@ -33,6 +33,8 @@ namespace PhysicsSystem.Tests.Editor
             integrityBase = 60f,
             // Transiciones
             ignitionTemperature = 70f,
+            burnInto = MaterialType.ASH,
+            smokeForm = MaterialType.SMOKE,
             collapseInto = MaterialType.EARTH,
             hasMeltingPoint = false,
         };
@@ -100,6 +102,7 @@ namespace PhysicsSystem.Tests.Editor
             gasPermeabilityCoeff = 1.0f,
             integrityBase = 5f,
             ignitionTemperature = 60f,
+            smokeForm = MaterialType.CO2,
             collapseInto = MaterialType.EMPTY,
             hasMeltingPoint = false,
         };

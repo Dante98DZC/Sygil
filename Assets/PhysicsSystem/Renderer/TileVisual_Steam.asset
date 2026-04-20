@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44125b001fca06444a0b09405e305590, type: 3}
   m_Name: TileVisual_Steam
   m_EditorClassIdentifier: 
-  materialType: 5
-  tile: {fileID: 11400000, guid: 8f3f1edb2ba1c3444b889f267a3dcbcd, type: 2}
+  materialType: 15
+  tile: {fileID: 11400000, guid: 802793977ff9b4845b4c2ca8741cf6ac, type: 2}

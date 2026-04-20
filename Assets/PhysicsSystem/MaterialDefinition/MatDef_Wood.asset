@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialType: 1
   matterState: 0
-  heatTransferCoeff: 0.6
-  electricTransferCoeff: 0.1
-  gasPermeabilityCoeff: 0.4
-  flammabilityCoeff: 0.8
-  integrityBase: 60
+  heatTransferCoeff: 1
+  electricTransferCoeff: 1
+  gasPermeabilityCoeff: 0.9
+  flammabilityCoeff: 0.5
+  integrityBase: 0
   blocksMovement: 0
   blocksVision: 0
   slowsMovement: 0
@@ -31,12 +31,17 @@ MonoBehaviour:
   condensedForm: 0
   freezingPoint: 0
   solidForm: 9
-  ignitionTemperature: 70
+  ignitionTemperature: 60
   burnInto: 9
   smokeForm: 16
-  collapseInto: 9
+  collapseInto: 6
   latentHeatOfFusion: 0
   latentHeatOfVaporization: 0
+  soilAbsorptionRate: 0
+  soilSaturationCapacity: 0
+  isPorous: 0
+  dissipationMultiplier: 1
+  viscosity: 1
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0

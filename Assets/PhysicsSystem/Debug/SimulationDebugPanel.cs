@@ -277,10 +277,36 @@ namespace PhysicsSystem.DebugTools
                 }
                 else
                 {
-                    h += 18f;   // materials row
-                    h += 18f;   // temp + gas
-                    h += 18f;   // liquid + electric
-                    h += 18f;   // integrity
+                    var tile = _engine.Grid.GetTile(tilePos);
+
+                    // Ground layer: always shown
+                    h += 18f;   // layer header
+                    h += 18f;   // mat + temp
+                    h += 18f;   // integrity + electric
+
+                    // Liquid layer: conditional
+                    if (tile.liquidMaterial != MaterialType.EMPTY || tile.liquidVolume > 0f)
+                    {
+                        h += 18f;   // layer header
+                        h += 18f;   // mat + vol
+                        h += 18f;   // soil moisture
+                    }
+
+                    // Gas layer: conditional
+                    if (tile.gasMaterial != MaterialType.EMPTY || tile.gasDensity > 0f)
+                    {
+                        h += 18f;   // layer header
+                        h += 18f;   // mat + density
+                    }
+
+                    // Derived states: conditional
+                    if (tile.derivedStates != StateFlags.NONE)
+                    {
+                        h += 18f;
+                    }
+
+                    h += 18f;   // atmosphere
+
                     if (_showNeighbors) h += 18f;
                 }
                 h += 8f;        // divider
@@ -423,36 +449,91 @@ namespace PhysicsSystem.DebugTools
             GUI.Label(new Rect(x, y, 60f, 16f), "(" + tilePos.x + "," + tilePos.y + ")", _valueStyle);
             y += 18f;
 
-            // Material row: Ground / Liquid / Gas
-            _dimStyle.fontSize  = 10;
-            _valueStyle.fontSize = 10;
-
-            DrawInlineMaterial(x,        y, "G:", tile.groundMaterial);
-            DrawInlineMaterial(x + 85f,  y, "L:", tile.liquidMaterial);
-            DrawInlineMaterial(x + 165f, y, "G:", tile.gasMaterial);
+            // ═══════════════════════════════════════════════════════════════
+            // GROUND LAYER
+            // ═══════════════════════════════════════════════════════════════
+            DrawLayerHeader(x, ref y, "GROUND", tile.groundMaterial, GetMaterialColor(tile.groundMaterial));
+            DrawInlineProperty(x,       y, "Mat:", tile.groundMaterial.ToString(), GetMaterialColor(tile.groundMaterial));
+            DrawInlineProperty(x + 80f, y, "Tmp:", tile.temperature.ToString("F1"), _textPrimary);
             y += 18f;
 
-            // Properties row 1
-            DrawInlineProperty(x,       y, "Tmp:", tile.temperature.ToString("F1"), _textPrimary);
-            DrawInlineProperty(x + 80f, y, "Gas:", tile.gasDensity.ToString("F1"),  _textPrimary);
-            y += 18f;
-
-            // Properties row 2
-            DrawInlineProperty(x,       y, "Liq:", tile.liquidVolume.ToString("F1"),   _textPrimary);
+            DrawInlineProperty(x,       y, "Int:", tile.structuralIntegrity.ToString("F0") + "%",
+                tile.structuralIntegrity > 60 ? _runningCol : tile.structuralIntegrity > 30 ? _warnCol : _dangerCol);
             DrawInlineProperty(x + 80f, y, "Ele:", tile.electricEnergy.ToString("F1"), _accentCol);
             y += 18f;
 
-            // Integrity
-            Color intColor = tile.structuralIntegrity > 60 ? _runningCol
-                           : tile.structuralIntegrity > 30 ? _warnCol
-                           : _dangerCol;
-            DrawInlineProperty(x, y, "Int:", tile.structuralIntegrity.ToString("F0") + "%", intColor);
+            // ═══════════════════════════════════════════════════════════════
+            // LIQUID LAYER
+            // ═══════════════════════════════════════════════════════════════
+            if (tile.liquidMaterial != MaterialType.EMPTY || tile.liquidVolume > 0f)
+            {
+                DrawLayerHeader(x, ref y, "LIQUID", tile.liquidMaterial, GetMaterialColor(tile.liquidMaterial));
+                DrawInlineProperty(x,       y, "Mat:", tile.liquidMaterial.ToString(), GetMaterialColor(tile.liquidMaterial));
+                DrawInlineProperty(x + 80f, y, "Vol:", tile.liquidVolume.ToString("F1") + "L", _textPrimary);
+                y += 18f;
+
+                DrawInlineProperty(x,       y, "Soil:", tile.soilMoisture.ToString("F1") + "L", _textSecondary);
+                y += 18f;
+            }
+
+            // ═══════════════════════════════════════════════════════
+            // GAS LAYER
+            // ═══════════════════════════════════════════════════════════════
+            if (tile.gasMaterial != MaterialType.EMPTY || tile.gasDensity > 0f)
+            {
+                DrawLayerHeader(x, ref y, "GAS", tile.gasMaterial, GetMaterialColor(tile.gasMaterial));
+                DrawInlineProperty(x,       y, "Mat:", tile.gasMaterial.ToString(), GetMaterialColor(tile.gasMaterial));
+                DrawInlineProperty(x + 80f, y, "Dens:", tile.gasDensity.ToString("F1"), _textPrimary);
+                y += 18f;
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // DERIVED STATES
+            // ═══════════════════════════════════════════════════════════════
+            if (tile.derivedStates != StateFlags.NONE)
+            {
+                _valueStyle.fontSize = 10;
+                string flags = "";
+                if ((tile.derivedStates & StateFlags.ON_FIRE) != 0) flags += "[ON_FIRE] ";
+                if ((tile.derivedStates & StateFlags.ELECTRIFIED) != 0) flags += "[ELECTRIFIED] ";
+                if ((tile.derivedStates & StateFlags.PRESSURIZED) != 0) flags += "[PRESSURIZED] ";
+                if ((tile.derivedStates & StateFlags.FLOODED) != 0) flags += "[FLOODED] ";
+                if ((tile.derivedStates & StateFlags.CONTAMINATED) != 0) flags += "[CONTAMINATED] ";
+                if ((tile.derivedStates & StateFlags.STRUCTURALLY_WEAK) != 0) flags += "[STRUCTURALLY_WEAK] ";
+                if ((tile.derivedStates & StateFlags.VOLATILE) != 0) flags += "[VOLATILE] ";
+                if ((tile.derivedStates & StateFlags.COLLAPSED) != 0) flags += "[COLLAPSED] ";
+                _valueStyle.normal.textColor = _warnCol;
+                GUI.Label(new Rect(x, y, _panelWidth - 40f, 18f), flags, _valueStyle);
+                y += 18f;
+            }
+
+            // ══════════════════════════��════════════════════════════════════
+            // ATMOSPHERE
+            // ═══════════════════════════════════════════════════════════════
+            _dimStyle.fontSize = 9;
+            _dimStyle.normal.textColor = _textMuted;
+            string atmoStatus = tile.isAtmosphereOpen ? "Atmosphere: OPEN (diffuses with world)" : "Atmosphere: CLOSED";
+            GUI.Label(new Rect(x, y, _panelWidth - 40f, 18f), atmoStatus, _dimStyle);
             y += 18f;
 
             if (_showNeighbors)
                 DrawNeighbors(x, ref y, tilePos);
 
             DrawDivider(x, ref y);
+        }
+
+        private void DrawLayerHeader(float x, ref float y, string layerName, MaterialType mat, Color matColor)
+        {
+            _headerStyle.fontSize = 10;
+            _headerStyle.normal.textColor = _headerCol;
+            GUI.Label(new Rect(x, y, 50f, 16f), layerName + ":", _headerStyle);
+
+            _valueStyle.fontSize = 10;
+            _valueStyle.normal.textColor = mat != MaterialType.EMPTY ? matColor : _textMuted;
+            string matName = mat != MaterialType.EMPTY ? mat.ToString() : "—";
+            GUI.Label(new Rect(x + 45f, y, 80f, 18f), matName, _valueStyle);
+
+            y += 18f;
         }
 
         private void DrawInlineMaterial(float x, float y, string label, MaterialType mat)
