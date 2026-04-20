@@ -50,8 +50,8 @@ namespace PhysicsSystem.Core
             {
                 ref var tile = ref grid.GetTile(pos);
 
-                // Def se obtiene del terreno base; el líquido y gas tienen sus propias reglas
-                var def = _library.Get(tile.groundMaterial);
+                var activeMat = tile.GetActiveMaterial();
+                var def = _library.Get(activeMat);
 
                 ApplyDecay(ref tile, pos);
 

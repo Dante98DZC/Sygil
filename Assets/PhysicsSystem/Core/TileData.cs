@@ -164,8 +164,18 @@ namespace PhysicsSystem.Core
             TileHeight.Deep    => 1000f,
             TileHeight.Shallow =>  500f,
             TileHeight.Ground  =>  200f,
-            _                  =>    0f   // Low=1, Wall=2, Tall=3 → sin líquido libre
+            _                  =>    0f
         };
+
+        public MaterialType GetActiveMaterial()
+        {
+            if (gasMaterial != MaterialType.EMPTY)    return gasMaterial;
+            if (liquidMaterial != MaterialType.EMPTY) return liquidMaterial;
+            return groundMaterial;
+        }
+
+        public static TileData Create(MaterialType ground, float temperature = 20f, float integrity = 100f)
+            => new TileData { groundMaterial = ground, temperature = temperature, structuralIntegrity = integrity };
 
         // ── Compatibilidad v3 ─────────────────────────────────────────────────
         // Mantenida temporalmente para que las reglas legacy (R01–R12) compilen

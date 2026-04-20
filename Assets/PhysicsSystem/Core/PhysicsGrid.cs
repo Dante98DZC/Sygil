@@ -17,6 +17,8 @@ namespace PhysicsSystem.Core
             Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
         };
 
+        private readonly Vector2Int[] _neighborBuffer = new Vector2Int[4];
+
         public PhysicsGrid(int width, int height, MaterialLibrary library)
         {
             Width = width;
@@ -33,13 +35,13 @@ namespace PhysicsSystem.Core
 
         public Vector2Int[] GetNeighborPositions(Vector2Int pos)
         {
-            var result = new List<Vector2Int>(4);
+            int count = 0;
             foreach (var offset in _neighborOffsets)
             {
                 var n = pos + offset;
-                if (InBounds(n)) result.Add(n);
+                if (InBounds(n)) _neighborBuffer[count++] = n;
             }
-            return result.ToArray();
+            return _neighborBuffer[..count];
         }
 
         public void WriteNeighbors(Vector2Int pos, TileData[] updated)
@@ -49,7 +51,10 @@ namespace PhysicsSystem.Core
             {
                 _grid[positions[i].x, positions[i].y] = updated[i];
                 // Solo marcar dirty si el vecino ya era activo o cambió de material
-                if (ActiveTiles.Contains(positions[i]) || updated[i].material != MaterialType.EMPTY)
+                var hasMaterial = updated[i].groundMaterial != MaterialType.EMPTY
+                             || updated[i].liquidMaterial != MaterialType.EMPTY
+                             || updated[i].gasMaterial != MaterialType.EMPTY;
+                if (ActiveTiles.Contains(positions[i]) || hasMaterial)
                     MarkDirty(positions[i]);
             }
         }

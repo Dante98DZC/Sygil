@@ -50,12 +50,14 @@ namespace PhysicsSystem.Diffusion
                 }
 
                 ref var tile = ref grid.GetTile(pos);
-                if (lib.Get(tile.material) == null) continue;
+                var tileMat = _property == GravityProperty.GasDensity ? tile.gasMaterial : tile.liquidMaterial;
+                if (lib.Get(tileMat) == null) continue;
 
                 foreach (var npos in grid.GetNeighborPositions(pos))
                 {
                     ref var neighbor = ref grid.GetTile(npos);
-                    var nDef = lib.Get(neighbor.material);
+                    var neighborMat = _property == GravityProperty.GasDensity ? neighbor.gasMaterial : neighbor.liquidMaterial;
+                    var nDef = lib.Get(neighborMat);
                     if (nDef == null) continue;
 
                     float neighborVal = snapshot.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);

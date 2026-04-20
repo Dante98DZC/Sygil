@@ -30,6 +30,11 @@ namespace PhysicsSystem.Rules
 
     public interface IInteractionRule
     {
+        // ── Contract ─────────────────────────────────────────────────────────────
+        // Rules trust that def is non-null. RuleRegistry.Evaluate validates
+        // def before calling CanApply. Rules should NOT perform null checks.
+        // ─────────────────────────────────────────────────────────────
+
         RuleID   Id       { get; }
         TickType TickType { get; }
         int      Priority { get; }

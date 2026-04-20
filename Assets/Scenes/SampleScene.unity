@@ -258,52 +258,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 765543138}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &337979953
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 337979954}
-  - component: {fileID: 337979955}
-  m_Layer: 0
-  m_Name: TileInspector
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &337979954
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 337979953}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1149877379}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &337979955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 337979953}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80b6bfb0f349d1c4a98174af6f9362bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _engine: {fileID: 1752883373}
-  _enabled: 1
 --- !u!1 &486545338
 GameObject:
   m_ObjectHideFlags: 0
@@ -524,53 +478,44 @@ MonoBehaviour:
   _renderer: {fileID: 1949785}
   _caster: {fileID: 184267511}
   _testPower: {fileID: 11400000, guid: 7160c3335e755504ab9d77e22f3087d0, type: 2}
-  _zone_combustion: 1
-  _zone_evaporation: 1
-  _zone_electric: 1
-  _zone_pressure: 1
-  _zone_structural: 1
-  _zone_humidity: 1
-  _zone_gasIgnition: 1
-  _zone_melting: 1
-  _zone_freezing: 1
-  _zone_boiling: 1
-  _zone_condensation: 1
+  _worldSize: 8
+  _scenario: 0
   _useHeightmap: 1
+  _enableCombustion: 1
+  _enableLiquid: 1
+  _enableElectric: 1
+  _enablePressure: 1
+  _enablePhase: 1
   _combustion:
     ignitionTemperature: 50
-    woodRowTemperature: 0
-  _evaporation:
-    waterTemperature: 90
+    burnMaterial: 1
+  _liquid:
+    temperature: 90
+    volume: 200
+    liquidType: 4
   _electric:
-    metalCharge: 0
+    charge: 90
+    conductor: 2
   _pressure:
-    centralGasDensity: 95
+    gasDensity: 95
+    gasType: 16
   _structural:
     integrity: 10
-    heatTriggerTemperature: 80
-  _humidity:
-    hotWoodTemperature: 85
-    waterVolume: 90
-    waterTemperature: 75
-  _gasIgnition:
-    gasDensity: 80
-    gasTemperature: 75
-  _gas:
-    globalGasDensity: 50
-  _melting:
+    heatTrigger: 80
+    material: 1
+  _phase:
     temperature: 95
-    liquidVolume: 50
-  _freezing:
-    temperature: 5
-    liquidVolume: 100
-  _boiling:
-    temperature: 85
-    liquidVolume: 80
-  _condensation:
-    temperature: 25
-    gasDensity: 70
+    volume: 100
+    fromMaterial: 3
+    isMelting: 1
+    isFreezing: 0
+    isBoiling: 0
+  _gas:
+    density: 50
+    temperature: 20
+    gasType: 15
   _presets: []
-  _showZoneLabels: 1
+  _showLabels: 1
 --- !u!4 &608221780
 Transform:
   m_ObjectHideFlags: 0
@@ -852,10 +797,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1574254010}
-  - {fileID: 337979954}
   - {fileID: 608221780}
-  - {fileID: 1958408872}
+  - {fileID: 1841953787}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1391730542
@@ -1065,52 +1008,6 @@ Transform:
   - {fileID: 486545339}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1574254009
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1574254010}
-  - component: {fileID: 1574254011}
-  m_Layer: 0
-  m_Name: SimulationDebugHUD
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1574254010
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1574254009}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1149877379}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1574254011
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1574254009}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81382d0f47c2c824ca37ac15474f9e9a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _engine: {fileID: 1752883373}
-  _hudPosition: {x: 10, y: 10}
 --- !u!1 &1752883372
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,8 +1039,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: 6224e12fd44138a4f99b7f5bdb64b1cd, type: 2}
   library: {fileID: 11400000, guid: 8d637983552d77f4bb24a2179af0916a, type: 2}
-  gridWidth: 32
-  gridHeight: 32
+  gridWidth: 8
+  gridHeight: 8
 --- !u!4 &1752883374
 Transform:
   m_ObjectHideFlags: 0
@@ -1160,7 +1057,7 @@ Transform:
   - {fileID: 13673554}
   m_Father: {fileID: 1480470295}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1958408871
+--- !u!1 &1841953786
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1168,22 +1065,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1958408872}
-  - component: {fileID: 1958408873}
+  - component: {fileID: 1841953787}
+  - component: {fileID: 1841953788}
   m_Layer: 0
-  m_Name: RuleEventLog
+  m_Name: SimulationDebugPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1958408872
+--- !u!4 &1841953787
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1958408871}
+  m_GameObject: {fileID: 1841953786}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1192,24 +1089,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1149877379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1958408873
+--- !u!114 &1841953788
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1958408871}
+  m_GameObject: {fileID: 1841953786}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e8fffb4a2fa0c74cada63ef549f6aa7, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a2e41a84fafa7040b9806968a4f6493, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxEntries: 40
-  _pauseOnIgnition: 1
-  _hudPosition: {x: 10, y: 200}
-  _panelWidth: 280
-  _panelHeight: 260
   _engine: {fileID: 1752883373}
+  _showPanel: 1
+  _position: {x: 10, y: 10}
+  _panelWidth: 340
+  _showStats: 1
+  _showRuleLog: 1
+  _showTileInspector: 1
+  _maxEntries: 50
+  _pauseOnIgnition: 1
+  _showNeighbors: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

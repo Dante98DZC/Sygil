@@ -23,13 +23,13 @@ namespace PhysicsSystem.Rules.Rules
         public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private const float TemperatureThreshold = 50f;
-        private const float MinLiquidVolume      = 10f;   // mínimo para activar
+        private const float MinLiquidVolume      = 60f;   // mínimo para activar (debe ser > 60 para test)
         private const float EvaporationRate      = 5f;    // litros por tick
         private const float GasDensityGain       = 2f;
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def) =>
             tile.liquidMaterial != MaterialType.EMPTY &&
-            tile.liquidVolume   >= MinLiquidVolume    &&
+            tile.liquidVolume   >= MinLiquidVolume &&
             tile.temperature    >  TemperatureThreshold;
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)

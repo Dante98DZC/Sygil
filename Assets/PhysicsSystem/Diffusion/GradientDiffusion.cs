@@ -42,7 +42,7 @@ namespace PhysicsSystem.Diffusion
                 if (sourceVal <= 0f) continue;
 
                 ref var tile = ref grid.GetTile(pos);
-                var def = lib.Get(tile.material);
+                var def = lib.Get(tile.groundMaterial);
                 if (def == null) continue;
 
                 float coeff = _config.GetCoeff(def);
@@ -50,7 +50,7 @@ namespace PhysicsSystem.Diffusion
                 foreach (var npos in grid.GetNeighborPositions(pos))
                 {
                     ref var neighbor = ref grid.GetTile(npos);
-                    var nDef = lib.Get(neighbor.material);
+                    var nDef = lib.Get(neighbor.groundMaterial);
                     if (nDef == null) continue;
 
                     // Lee valor vecino desde snapshot si existe, sino valor actual

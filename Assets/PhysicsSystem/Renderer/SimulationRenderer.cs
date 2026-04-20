@@ -73,7 +73,11 @@ namespace PhysicsSystem.Renderer
             for (int y = 0; y < h; y++)
             {
                 positions[idx] = SimToTilemap(new Vector2Int(x, y));
-                tiles[idx]     = _visualLibrary.Get(_engine.Grid.GetTile(x, y).material);
+                var tile = _engine.Grid.GetTile(x, y);
+                var mat = tile.liquidMaterial != MaterialType.EMPTY ? tile.liquidMaterial
+                           : tile.groundMaterial != MaterialType.EMPTY ? tile.groundMaterial
+                           : tile.gasMaterial;
+                tiles[idx]     = _visualLibrary.Get(mat);
                 idx++;
             }
 

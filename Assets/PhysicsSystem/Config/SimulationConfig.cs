@@ -15,6 +15,8 @@ namespace PhysicsSystem.Config
         public int   maxRulesPerTile = 5;
         public float propertyCap     = 100f;
         public float propertyFloor   = 0f;
+        public float minTemperature = 0f;
+        public float maxTemperature = 100f;
 
         [Header("Decay Rates")]
         public float decayTemperature = 2.0f;
