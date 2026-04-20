@@ -26,6 +26,9 @@ namespace PhysicsSystem.Rules
         R14_FREEZING,
         R15_BOILING,
         R16_CONDENSATION,
+
+        // Filtración
+        R17_FILTRATION,
     }
 
     public interface IInteractionRule

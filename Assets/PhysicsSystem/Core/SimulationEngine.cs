@@ -72,6 +72,9 @@ namespace PhysicsSystem.Core
             // ── Humidity ──────────────────────────────────────────────────────
             _ruleRegistry.AddRule(new Rules.Rules.R08_SlowEvaporation());
 
+            // ── Filtration ─────────────────────────────────────────────────
+            _ruleRegistry.AddRule(new Rules.Rules.R_Filtration(library));
+
             // ── Phase transitions: solid ↔ liquid ↔ gas ──────────────────────
             // Priority order within INTEGRITY tick: Melting(3) = Freezing(3) > Boiling(2) = Condensation(2)
             // R02 fallback evaporation runs before phase rules (Priority 6)

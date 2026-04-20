@@ -84,6 +84,12 @@ namespace PhysicsSystem.Core
         /// </summary>
         public float liquidVolume;
 
+        /// <summary>
+        /// Volumen de líquido absorbido por el suelo (0..soilSaturationCapacity).
+        /// Campo separado de structuralIntegrity para evitar colisión semántica.
+        /// </summary>
+        public float soilMoisture;
+
         // ══════════════════════════════════════════════════════════════════════
         // ATMOSPHERE — gas en el aire del tile
         // ══════════════════════════════════════════════════════════════════════

@@ -35,8 +35,8 @@ MonoBehaviour:
   burnInto: 0
   smokeForm: 16
   collapseInto: 0
+  latentHeatOfFusion: 80
+  latentHeatOfVaporization: 0
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0
-  latentHeatOfFusion: 80
-  latentHeatOfVaporization: 0

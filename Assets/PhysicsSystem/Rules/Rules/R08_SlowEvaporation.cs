@@ -23,32 +23,44 @@ namespace PhysicsSystem.Rules.Rules
         public MaterialLayer SourceLayer => MaterialLayer.Liquid;
 
         private const float TemperatureThreshold = 50f;
-        private const float MinLiquidVolume      = 60f;   // mínimo para activar (debe ser > 60 para test)
-        private const float EvaporationRate      = 5f;    // litros por tick
+        private const float MinLiquidVolume      = 60f;
+        private const float MinSoilMoisture      = 10f;
+        private const float EvaporationRate      = 5f;
         private const float GasDensityGain       = 2f;
 
-        public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def) =>
-            tile.liquidMaterial != MaterialType.EMPTY &&
-            tile.liquidVolume   >= MinLiquidVolume &&
-            tile.temperature    >  TemperatureThreshold;
+        public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
+        {
+            if (tile.liquidMaterial != MaterialType.EMPTY &&
+                tile.liquidVolume   >= MinLiquidVolume &&
+                tile.temperature > TemperatureThreshold)
+                return true;
+
+            if (tile.liquidVolume <= 0f && tile.soilMoisture >= MinSoilMoisture && tile.isAtmosphereOpen)
+                return tile.temperature > TemperatureThreshold;
+
+            return false;
+        }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
-            // Evaporar una fracción del líquido
-            tile.liquidVolume = Mathf.Clamp(tile.liquidVolume - EvaporationRate, 0f, tile.LiquidCapacity);
+            if (tile.liquidMaterial != MaterialType.EMPTY && tile.liquidVolume > 0f)
+            {
+                tile.liquidVolume = Mathf.Clamp(tile.liquidVolume - EvaporationRate, 0f, tile.LiquidCapacity);
 
-            // Limpiar el slot si el volumen llegó a cero
-            if (tile.liquidVolume <= 0f)
-                tile.liquidMaterial = MaterialType.EMPTY;
+                if (tile.liquidVolume <= 0f)
+                    tile.liquidMaterial = MaterialType.EMPTY;
 
-            // El vapor aumenta la densidad atmosférica
-            tile.gasDensity = Mathf.Clamp(tile.gasDensity + GasDensityGain, 0f, 100f);
+                tile.gasDensity = Mathf.Clamp(tile.gasDensity + GasDensityGain, 0f, 100f);
 
-            // Si el slot de gas está libre, producir vapor
-            if (tile.gasMaterial == MaterialType.EMPTY)
-                tile.gasMaterial = MaterialType.STEAM;
+                if (tile.gasMaterial == MaterialType.EMPTY)
+                    tile.gasMaterial = MaterialType.STEAM;
+            }
+            else if (tile.soilMoisture > 0f && tile.isAtmosphereOpen)
+            {
+                float evapRate = 0.1f;
+                tile.soilMoisture = Mathf.Max(0f, tile.soilMoisture - evapRate);
+            }
 
-            // clamp_all — propiedades no modificadas por esta regla
             tile.temperature         = Mathf.Clamp(tile.temperature,         0f, 100f);
             tile.electricEnergy      = Mathf.Clamp(tile.electricEnergy,      0f, 100f);
             tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity, 0f, 100f);

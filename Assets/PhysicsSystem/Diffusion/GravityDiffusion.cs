@@ -66,7 +66,8 @@ namespace PhysicsSystem.Diffusion
 
                     Vector2Int direction = npos - pos;
                     float bias     = ComputeBias(ref tile, ref neighbor, direction);
-                    float transfer = diff * nDef.gasPermeabilityCoeff * bias * 0.25f;
+                    float neighborViscosity = nDef?.viscosity ?? 1f;
+                    float transfer = diff * nDef.gasPermeabilityCoeff * neighborViscosity * bias * 0.25f;
                     if (transfer <= 0f) continue;
 
                     AddValue(ref tile,     -transfer);
@@ -79,12 +80,12 @@ namespace PhysicsSystem.Diffusion
             // Disipación post-difusión para gas en atmósfera abierta
             if (_property == GravityProperty.GasDensity)
             {
-                ApplyDissipation(grid);
+                ApplyDissipation(grid, lib);
             }
         }
 
         /// <summary>
-        /// Gas: directional bias — gas rises more easily (direction.y < 0 = up gets bias 0.4).
+        /// Gas: directional bias — gas rises more easily (direction.y < 0 = up gets bias 0.5).
         /// Fluid: flows toward lower TileHeight — higher delta = stronger flow.
         /// Scale 0.2f per height step: diff=1 → bias=0.7, diff=2 → bias=0.9, diff=-1 → bias=0.3.
         /// </summary>
@@ -92,9 +93,9 @@ namespace PhysicsSystem.Diffusion
         {
             if (_property == GravityProperty.GasDensity)
             {
-                if (direction.y < 0) return 0.4f;  // Arriba (gas sube)
-                if (direction.y > 0) return 0.1f;  // Abajo
-                return 0.25f;                     // Lateral
+                if (direction.y < 0) return 0.50f;  // Arriba: sube por flotabilidad
+                if (direction.y > 0) return 0.15f; // Abajo: resistido por gravedad
+                return 0.40f;                     // Lateral: expansión horizontal
             }
 
             // TileHeight is int enum: Deep=-2 … Tall=3
@@ -105,13 +106,23 @@ namespace PhysicsSystem.Diffusion
         /// <summary>
         /// Elimina gas con densidad baja en atmósfera abierta.
         /// La energía se considera perdida a la atmósfera.
+        /// Aplica dissipationMultiplier por tipo de gas.
         /// </summary>
-        private void ApplyDissipation(PhysicsGrid grid)
+        private void ApplyDissipation(PhysicsGrid grid, MaterialLibrary lib)
         {
             foreach (var pos in grid.ActiveTiles)
             {
                 ref var tile = ref grid.GetTile(pos);
-                if (tile.isAtmosphereOpen && tile.gasDensity < _dissipationThreshold)
+                if (!tile.isAtmosphereOpen || tile.gasDensity < _dissipationThreshold)
+                    continue;
+
+                var matDef = lib.Get(tile.gasMaterial);
+                float mult = matDef?.dissipationMultiplier ?? 1f;
+                float amount = _dissipationThreshold * mult;
+
+                tile.gasDensity -= amount;
+
+                if (tile.gasDensity <= 0f)
                 {
                     tile.gasDensity = 0f;
                     tile.gasMaterial = MaterialType.EMPTY;

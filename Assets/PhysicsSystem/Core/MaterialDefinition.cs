@@ -137,6 +137,47 @@ namespace PhysicsSystem.Core
         /// </summary>
         public float latentHeatOfVaporization = 0f;
 
+        // ── Filtración ─────────────────────────────────────────────────────
+
+        [Header("Filtración")]
+
+        /// <summary>
+        /// Velocidad de absorción de líquido por tick (litros/tick).
+        /// Solo activo si isPorous = true.
+        /// </summary>
+        [Range(0f, 10f)] public float soilAbsorptionRate = 0f;
+
+        /// <summary>
+        /// Volumen máximo de líquido que este material puede retener.
+        /// </summary>
+        [Range(0f, 500f)] public float soilSaturationCapacity = 0f;
+
+        /// <summary>
+        /// Si true, este material absorbe líquidos de la capa superior.
+        /// </summary>
+        public bool isPorous = false;
+
+        // ── Disipación ─────────────────────────────────────────────────────
+
+        [Header("Disipación")]
+
+        /// <summary>
+        /// Multiplicador de velocidad de disipación en atmósfera abierta.
+        /// 1.0 = base, >1 = más rápido, <1 = más lento. Mínimo 0 para gases
+        /// que no disipen (ej. bolsa de CO2 confinada).
+        /// </summary>
+        [Range(0f, 5f)] public float dissipationMultiplier = 1f;
+
+        // ── Viscosidad ─────────────────────────────────────────────────────
+
+        [Header("Viscosidad")]
+
+        /// <summary>
+        /// Coeficiente de flujo para líquidos. 1.0 = agua (base), valores menores
+        /// = más viscoso. No aplica a sólidos ni gases.
+        /// </summary>
+        [Range(0.01f, 1f)] public float viscosity = 1f;
+
         // ── Campos v2 obsoletos ───────────────────────────────────────────────
         // Mantenidos para que los ScriptableObjects existentes no pierdan datos.
         // No usar en código nuevo — usar meltingPoint / liquidForm en su lugar.

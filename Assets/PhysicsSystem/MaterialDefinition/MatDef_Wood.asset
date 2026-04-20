@@ -32,9 +32,11 @@ MonoBehaviour:
   freezingPoint: 0
   solidForm: 9
   ignitionTemperature: 70
-  burnInto: 0
-  smokeForm: 17
+  burnInto: 9
+  smokeForm: 16
   collapseInto: 9
+  latentHeatOfFusion: 0
+  latentHeatOfVaporization: 0
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0

@@ -13,27 +13,33 @@ tile.liquidMaterial  // fluids: WATER, LAVA, MUD...
 tile.gasMaterial    // atmosphere: STEAM, SMOKE...
 tile.liquidVolume   // liters, not humidity
 tile.gasDensity    // proxy for pressure (no pressure field)
+tile.soilMoisture   // absorbed water in porous soil
+tile.isAtmosphereOpen // gas can dissipate
 ```
 - `.material` property is `[Obsolete]` — don't use it
 - Rules R13-R16 access specific layers
 - `isAtmosphereOpen` flag for gas dissipation
+- `soilMoisture` stores absorbed water in porous materials
 
 ## Architecture
 - **Rules** → `IInteractionRule` in `RuleRegistry`
 - **Diffusion** → separate strategies per property
 - **4 tick types**: FAST(0.1s), STANDARD(0.3s), SLOW(0.5s), INTEGRITY(1.0s)
-- **16 rules**: R01-R16 (R13-R16 are phase transitions)
+- **17 rules**: R01-R17 (R13-R16 = phase transitions, R17 = filtration)
 
 ## Test Files
 - `RuleTests.cs` (EditMode) — use obsolete API, needs v4 update
 - `TickBehaviorTests.cs` (PlayMode) — 10/10 pass but use obsolete API
 
-## Implemented Changes (v2 — COMPLETED)
+## Implemented Changes (v3 — COMPLETED)
 1. ✓ `PhysicsGrid.GetMaterialDef(pos, MaterialLayer)` — FIXED
 2. ✓ Energy conservation in phase transitions (R13-R16) — IMPLEMENTED
 3. ✓ Latent heat fields in MaterialDefinition — IMPLEMENTED
 4. ✓ Gas dissipation in open atmosphere — IMPLEMENTED (via GravityDiffusion)
-5. Pending: Update tests to v4 API
+5. ✓ R17_FILTRATION — soil absorption with viscosity — IMPLEMENTED
+6. ✓ soilMoisture field in TileData — IMPLEMENTED
+7. ✓ New MaterialDefinition fields (isPorous, soilAbsorptionRate, soilSaturationCapacity, dissipationMultiplier, viscosity) — IMPLEMENTED
+8. ✓ R08 evaporation from wet soil — IMPLEMENTED
 
 ## Energy Conservation System
 - **Fusión (R13):** Consumes `latentHeatOfFusion` energy → cools tile

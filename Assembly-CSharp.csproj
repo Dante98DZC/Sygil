@@ -98,6 +98,7 @@
     <Compile Include="Assets\PhysicsSystem\Diffusion\GradientDiffusion.cs" />
     <Compile Include="Assets\PhysicsSystem\Bridge\TileUpdateEvent.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\SimulationModifierRegistry.cs" />
+    <Compile Include="Assets\PhysicsSystem\Rules\Rules\R_Filtration.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\RuleRegistry.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\PowerChannel.cs" />
   </ItemGroup>

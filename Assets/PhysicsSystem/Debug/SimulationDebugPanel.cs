@@ -106,6 +106,7 @@ namespace PhysicsSystem.DebugTools
             { RuleID.R14_FREEZING,              new Color(0.5f,  0.85f, 1f)    },
             { RuleID.R15_BOILING,               new Color(0.9f,  0.95f, 1f)    },
             { RuleID.R16_CONDENSATION,          new Color(0.55f, 0.8f,  0.95f) },
+            { RuleID.R17_FILTRATION,           new Color(0.6f,  0.75f, 0.4f)  },
         };
 
         private struct RuleLogEntry

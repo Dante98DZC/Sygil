@@ -25,16 +25,18 @@ MonoBehaviour:
   movementCost: 1
   meltingPoint: 0
   liquidForm: 0
-  boilingPoint: 1500
+  boilingPoint: 0
   gasForm: 18
   condensationPoint: 0
   condensedForm: 0
-  freezingPoint: 0
+  freezingPoint: 50
   solidForm: 3
   ignitionTemperature: 0
   burnInto: 0
   smokeForm: 16
   collapseInto: 0
+  latentHeatOfFusion: 150
+  latentHeatOfVaporization: 0
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0
