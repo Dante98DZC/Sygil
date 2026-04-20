@@ -31,22 +31,60 @@ tile.isAtmosphereOpen // gas can dissipate
 - `RuleTests.cs` (EditMode) — use obsolete API, needs v4 update
 - `TickBehaviorTests.cs` (PlayMode) — 10/10 pass but use obsolete API
 
-## Implemented Changes (v3 — COMPLETED)
-1. ✓ `PhysicsGrid.GetMaterialDef(pos, MaterialLayer)` — FIXED
-2. ✓ Energy conservation in phase transitions (R13-R16) — IMPLEMENTED
-3. ✓ Latent heat fields in MaterialDefinition — IMPLEMENTED
-4. ✓ Gas dissipation in open atmosphere — IMPLEMENTED (via GravityDiffusion)
-5. ✓ R17_FILTRATION — soil absorption with viscosity — IMPLEMENTED
-6. ✓ soilMoisture field in TileData — IMPLEMENTED
-7. ✓ New MaterialDefinition fields (isPorous, soilAbsorptionRate, soilSaturationCapacity, dissipationMultiplier, viscosity) — IMPLEMENTED
-8. ✓ R08 evaporation from wet soil — IMPLEMENTED
+## Atmosphere-Based Diffusion System (v6.3)
+
+**Problem solved:** Hardcoded 50 baseline caused instability. Now atmosphere is a real system.
+
+### Configuration (SimulationConfig)
+```csharp
+atmosphereGas = MaterialType.AIR          // gas type that fills atmosphere
+atmosphereDensity = 50f                   // baseline density (1 atm)
+atmosphereTemperature = 23f              // baseline temperature (°C)
+atmosphereDiffusionRate = 0.25f          // exchange rate per tick
+```
+
+### How It Works
+
+**Gas Diffusion (GravityDiffusion):**
+- Tiles with `isAtmosphereOpen = true` diffuse with atmosphere
+- Exchange formula: `exchange = (gasDensity - atmosphereDensity) * atmosphereDiffusionRate`
+- Gas naturally tends toward atmosphereDensity (50) without hardcoded decay
+
+**Temperature Diffusion (GradientDiffusion):**
+- Tiles open to atmosphere diffuse temperature toward atmosphereTemperature (23°C)
+- Exchange formula: `exchange = (temperature - atmosphereTemperature) * atmosphereDiffusionRate`
+
+### RebuildAtmosphereFlags()
+- Must be called after generating world (`TestWorldGenerator.GenerateMap()`)
+- Sets `isAtmosphereOpen = true` for tiles above any solid in their column
+- Gas/temperature diffuse naturally with atmosphere on open tiles
+
+### DecaySystem Changes
+- Tiles **NOT** open to atmosphere: decay toward atmosphereDensity
+- Tiles **open** to atmosphere: no decay (diffusion handles it)
+- Stability check uses atmosphereTemperature for temperature
+
+## Liquid Flow Stop Conditions
+1. **Volume too low** (`sourceVal <= 0.5f`) — skip diffusion
+2. **Neighbor at capacity** (`neighborVal >= neighborCapacity - 0.1f`) — no transfer
+3. **Height-based bias** — fluid flows toward lower TileHeight
+
+## Render System (3-Layer Tilemap)
+- **GroundTilemap** (Order 0): base layer — always visible
+- **LiquidTilemap** (Order 1): transparent overlay — opacity scales with liquidVolume
+- **GasTilemap** (Order 2): transparent overlay — opacity scales with gasDensity
+
+Setup in Unity:
+1. Create 3 Tilemap GameObjects under Sygil
+2. Set TilemapRenderer sorting order: Ground=0, Liquid=1, Gas=2
+3. Assign to SimulationRenderer fields in Inspector
 
 ## Energy Conservation System
 - **Fusión (R13):** Consumes `latentHeatOfFusion` energy → cools tile
 - **Freezing (R14):** Releases `latentHeatOfFusion` energy → heats tile
 - **Boiling (R15):** Consumes `latentHeatOfVaporization` energy → cools tile
 - **Condensation (R16):** Releases `latentHeatOfVaporization` energy → heats tile
-- **Gas dissipation:** In open atmosphere (`isAtmosphereOpen=true`), gas with density < 5 is lost
+- **Gas dissipation:** In open atmosphere (`isAtmosphereOpen=true`), gas diffuses naturally
 
 ## Material Latent Heat Values
 | Material | latentHeatOfFusion | latentHeatOfVaporization |
@@ -59,12 +97,8 @@ tile.isAtmosphereOpen // gas can dissipate
 
 ## Key Methods
 - `PhysicsGrid.RebuildAtmosphereFlags()` — recalcula `isAtmosphereOpen`
-- `GravityDiffusion.ApplyDissipation()` — elimina gas bajo en atmósfera abierta
+- `GravityDiffusion.Diffuse()` — gas diffusion + atmosphere exchange
+- `GradientDiffusion.Diffuse()` — temperature diffusion + atmosphere exchange
+- `DecaySystem.IsStable()` — checks atmosphere-based equilibrium
 
-See `AGENTS_ActionPlan.md` for detailed implementation plan.
-
-## Reference
-- Full context: `AGENTS_Context.md` (v6.2)
-- Action plan: `AGENTS_ActionPlan.md`
-- Unity Editor: `AGENTS_UnityEditor.md`
-- Rules: `Assets/PhysicsSystem/Rules/Rules/R_PhaseTransitions.cs`
+See `AGENTS_Context.md` for detailed implementation plan.

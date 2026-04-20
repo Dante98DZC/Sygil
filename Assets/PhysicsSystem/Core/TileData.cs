@@ -39,6 +39,7 @@ namespace PhysicsSystem.Core
         SMOKE        = 16,  // subproducto de combustión, no condensa
         CO2          = 17,  // gas inerte denso
         ROCK_GAS     = 18,  // LAVA vaporizada, muy rara
+        AIR         = 19,  // gas atmosférico (no existe en el mundo, solo en atmósfera)
     }
 
     // ── TileData v4 ───────────────────────────────────────────────────────────

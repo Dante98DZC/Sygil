@@ -23,7 +23,7 @@ MonoBehaviour:
   blocksVision: 0
   slowsMovement: 0
   movementCost: 1
-  meltingPoint: 800
+  meltingPoint: 100
   liquidForm: 13
   boilingPoint: 0
   gasForm: 0
@@ -35,8 +35,13 @@ MonoBehaviour:
   burnInto: 0
   smokeForm: 16
   collapseInto: 0
+  latentHeatOfFusion: 100
+  latentHeatOfVaporization: 150
+  soilAbsorptionRate: 0
+  soilSaturationCapacity: 0
+  isPorous: 0
+  dissipationMultiplier: 1
+  viscosity: 1
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0
-  latentHeatOfFusion: 100
-  latentHeatOfVaporization: 150

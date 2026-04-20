@@ -252,8 +252,9 @@ namespace PhysicsSystem.Tests
             else
                 MakeFlatGround();
 
-            FillGasBg();
             PlaceAllZones();
+
+            _engine.Grid.RebuildAtmosphereFlags();
 
             Debug.Log($"[TestWorldGenerator] Generated {_gridSize}x{_gridSize} - {_engine.Grid.ActiveTiles.Count} active");
             _renderer?.Refresh();
@@ -397,20 +398,26 @@ namespace PhysicsSystem.Tests
             for (int y = 0; y < _gridSize; y++)
             {
                 var tile = _engine.Grid.GetTile(new Vector2Int(x, y));
-                tile.groundMaterial = MaterialType.STONE;
-                tile.structuralIntegrity = 80f;
-                tile.height = TileHeight.Ground;
-                _engine.Grid.SetTile(new Vector2Int(x, y), tile);
-            }
-        }
 
-        private void FillGasBg()
-        {
-            for (int x = 0; x < _gridSize; x++)
-            for (int y = 0; y < _gridSize; y++)
-            {
-                ref var tile = ref _engine.Grid.GetTile(new Vector2Int(x, y));
-                tile.gasDensity = _gas.density;
+                if (y == 0)
+                {
+                    tile.groundMaterial = MaterialType.STONE;
+                    tile.height = TileHeight.Wall;
+                }
+                else if (y == 1)
+                {
+                    tile.groundMaterial = MaterialType.STONE;
+                    tile.height = TileHeight.Ground;
+                }
+                else
+                {
+                    tile.groundMaterial = MaterialType.EMPTY;
+                    tile.height = TileHeight.Shallow;
+                    tile.gasDensity = 0f;
+                }
+
+                tile.structuralIntegrity = 80f;
+                _engine.Grid.SetTile(new Vector2Int(x, y), tile);
             }
         }
 

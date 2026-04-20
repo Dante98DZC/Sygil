@@ -65,16 +65,21 @@ namespace PhysicsSystem.Core
         private void ApplyDecay(ref TileData tile, Vector2Int pos)
         {
             // Temperatura: protegida si ON_FIRE (DerivedStateComputer ya corrió)
+            // Temperatura ambiente es manejada por difusión con atmósfera
             bool onFire = (tile.derivedStates & StateFlags.ON_FIRE) != 0;
             if (!onFire)
                 tile.temperature = Mathf.Max(0f, tile.temperature - _config.decayTemperature);
 
-            // gasDensity decae hacia el baseline atmosférico en ambas direcciones.
-            // MoveTowards garantiza que nunca sobrepasa el objetivo.
-            tile.gasDensity = Mathf.MoveTowards(
-                tile.gasDensity,
-                _config.gasBaseline,
-                _config.decayGasDensity);
+            // gasDensity: ya no hay decay forzado hacia baseline
+            // La atmósfera hace difusión naturalmente - tiles abiertos tienden a atmosphereDensity
+            // Solo aplicamos decay mínimo si el tile NO está abierto a atmósfera
+            if (!tile.isAtmosphereOpen)
+            {
+                tile.gasDensity = Mathf.MoveTowards(
+                    tile.gasDensity,
+                    _config.atmosphereDensity,
+                    _config.decayGasDensity);
+            }
 
             // Electricidad: zeroing si no hubo fuente este tick
             if (!_electricSourceTiles.Contains(pos))
@@ -86,20 +91,27 @@ namespace PhysicsSystem.Core
         /// <summary>
         /// Árbitro único de estabilidad.
         ///
-        /// gasDensity es estable cuando está dentro de la tolerancia del baseline (50),
-        /// no de 0 — un tile con gasDensity=50 es el estado de reposo normal.
-        ///
-        /// Un tile es "vacío" cuando las tres capas de material están en EMPTY.
+        /// Un tile es estable cuando:
+        /// - Su temperatura está cerca de la temperatura atmosférica
+        /// - Su gasDensity está cerca de la densidad atmosférica (solo si NO está abierto a atmósfera)
+        /// - No tiene líquido activo
+        /// - Su integridad estructural está en baseline
+        /// - Las tres capas de material están en EMPTY
         /// </summary>
         private bool IsStable(ref TileData tile, MaterialDefinition def)
         {
             float t = _config.deactivationTolerance;
 
-            if (tile.temperature    > t) return false;
+            // Temperatura estable cerca de atmTemperature
+            if (Mathf.Abs(tile.temperature - _config.atmosphereTemperature) > t) return false;
             if (tile.electricEnergy > t) return false;
 
-            // gasDensity: estable si está cerca del baseline, no de 0
-            if (Mathf.Abs(tile.gasDensity - _config.gasBaseline) > t) return false;
+            // gasDensity: estable si NO está abierto a atmósfera (ya difunde naturalmente)
+            // Para tiles abiertos a atmósfera, no requerimos gasDensity específico
+            if (!tile.isAtmosphereOpen)
+            {
+                if (Mathf.Abs(tile.gasDensity - _config.atmosphereDensity) > t) return false;
+            }
 
             // liquidVolume: estable si el tile está seco
             if (tile.liquidVolume > t) return false;

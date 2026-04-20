@@ -11,14 +11,14 @@ namespace PhysicsSystem.Diffusion
     public class GradientDiffusion : IDiffusionStrategy
     {
         private readonly GradientProperty _property;
-        private readonly GradientConfig   _config;
+        private readonly GradientConfig _config;
 
         public TickType TickType { get; }
 
         public GradientDiffusion(GradientProperty property)
         {
             _property = property;
-            _config   = property == GradientProperty.ElectricEnergy
+            _config = property == GradientProperty.ElectricEnergy
                 ? new GradientConfig(coeff: d => d.electricTransferCoeff)
                 : new GradientConfig(coeff: d => d.heatTransferCoeff);
 
@@ -27,11 +27,13 @@ namespace PhysicsSystem.Diffusion
                 : TickType.SLOW;
         }
 
-        public void Diffuse(PhysicsGrid grid, MaterialLibrary lib)
+        public void Diffuse(PhysicsGrid grid, MaterialLibrary lib, SimulationConfig config)
         {
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
 
-            // F3: snapshot valores ANTES de escribir — evita doble transferencia A→B + B→A en mismo tick
+            float atmTemperature = config.atmosphereTemperature;
+            float atmDiffusionRate = config.atmosphereDiffusionRate;
+
             var snapshot = new Dictionary<Vector2Int, float>(activeTiles.Count);
             foreach (var pos in activeTiles)
                 snapshot[pos] = GetValue(grid.GetTile(pos));
@@ -39,7 +41,7 @@ namespace PhysicsSystem.Diffusion
             foreach (var pos in activeTiles)
             {
                 float sourceVal = snapshot[pos];
-                if (sourceVal <= 0f) continue;
+                if (sourceVal <= 0f && _property == GradientProperty.Temperature) continue;
 
                 ref var tile = ref grid.GetTile(pos);
                 var def = lib.Get(tile.groundMaterial);
@@ -53,7 +55,6 @@ namespace PhysicsSystem.Diffusion
                     var nDef = lib.Get(neighbor.groundMaterial);
                     if (nDef == null) continue;
 
-                    // Lee valor vecino desde snapshot si existe, sino valor actual
                     float neighborVal = snapshot.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);
 
                     float transfer = (sourceVal - neighborVal)
@@ -61,9 +62,19 @@ namespace PhysicsSystem.Diffusion
 
                     if (transfer <= 0f) continue;
 
-                    AddValue(ref tile,     -transfer);
-                    AddValue(ref neighbor,  transfer);
+                    AddValue(ref tile, -transfer);
+                    AddValue(ref neighbor, transfer);
                     grid.MarkDirty(npos);
+                }
+
+                if (_property == GradientProperty.Temperature && tile.isAtmosphereOpen)
+                {
+                    float atmDiff = sourceVal - atmTemperature;
+                    if (Mathf.Abs(atmDiff) > 0.1f)
+                    {
+                        float exchange = atmDiff * atmDiffusionRate;
+                        AddValue(ref tile, -exchange);
+                    }
                 }
             }
         }
@@ -74,7 +85,7 @@ namespace PhysicsSystem.Diffusion
         private void AddValue(ref TileData t, float delta)
         {
             if (_property == GradientProperty.Temperature)
-                t.temperature    = Mathf.Clamp(t.temperature    + delta, 0f, 100f);
+                t.temperature = Mathf.Clamp(t.temperature + delta, 0f, 100f);
             else
                 t.electricEnergy = Mathf.Clamp(t.electricEnergy + delta, 0f, 100f);
         }

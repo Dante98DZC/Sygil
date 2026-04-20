@@ -9,10 +9,8 @@ namespace PhysicsSystem.Diffusion
     public enum GravityProperty { Humidity, GasDensity }
 
     /// <summary>
-    /// GasDensity — isotropic spread: gas fills space equally, no directional bias.
-    ///              Propagates gasMaterial alongside numeric density.
-    /// Humidity   — height-based flow: fluid moves toward lower TileHeight neighbors.
-    ///              Propagates liquidMaterial alongside numeric humidity.
+    /// GasDensity — isotropic spread with atmosphere exchange.
+    /// Humidity   — height-based flow.
     /// </summary>
     public class GravityDiffusion : IDiffusionStrategy
     {
@@ -25,115 +23,106 @@ namespace PhysicsSystem.Diffusion
             _property = property;
         }
 
-        [SerializeField] private float _dissipationThreshold = 5f;
-
-        public void Diffuse(PhysicsGrid grid, MaterialLibrary lib)
+        public void Diffuse(PhysicsGrid grid, MaterialLibrary lib, SimulationConfig config)
         {
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
 
-            // Snapshot numeric values — prevents double-transfer within same tick
+            float atmDensity = config.atmosphereDensity;
+            float atmDiffusionRate = config.atmosphereDiffusionRate;
+
             var snapshot = new Dictionary<Vector2Int, float>(activeTiles.Count);
             foreach (var pos in activeTiles)
                 snapshot[pos] = GetValue(grid.GetTile(pos));
 
             foreach (var pos in activeTiles)
             {
+                ref var tile = ref grid.GetTile(pos);
                 float sourceVal = snapshot[pos];
+
+                // Condición de parada: volumen muy bajo = proceso innecesario
+                if (sourceVal <= 0.5f) continue;
 
                 if (_property == GravityProperty.GasDensity)
                 {
-                    if (Mathf.Abs(sourceVal - 50f) < 0.1f) continue;
+                    if (!IsInteractiveGas(ref tile, lib) && sourceVal <= 0f) continue;
                 }
-                else
-                {
-                    if (sourceVal <= 0f) continue;
-                }
+                else if (sourceVal <= 0f) continue;
 
-                ref var tile = ref grid.GetTile(pos);
                 var tileMat = _property == GravityProperty.GasDensity ? tile.gasMaterial : tile.liquidMaterial;
-                if (lib.Get(tileMat) == null) continue;
+                var tileDef = lib.Get(tileMat);
+                if (tileDef == null) continue;
 
                 foreach (var npos in grid.GetNeighborPositions(pos))
                 {
                     ref var neighbor = ref grid.GetTile(npos);
                     var neighborMat = _property == GravityProperty.GasDensity ? neighbor.gasMaterial : neighbor.liquidMaterial;
-                    var nDef = lib.Get(neighborMat);
-                    if (nDef == null) continue;
 
                     float neighborVal = snapshot.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);
                     float diff = sourceVal - neighborVal;
                     if (diff <= 0f) continue;
 
+                    // Para líquidos: no transferir si vecino ya está lleno
+                    if (_property == GravityProperty.Humidity)
+                    {
+                        float neighborCapacity = neighbor.LiquidCapacity;
+                        if (neighborCapacity > 0f && neighborVal >= neighborCapacity - 0.1f)
+                            continue;
+                    }
+
                     Vector2Int direction = npos - pos;
-                    float bias     = ComputeBias(ref tile, ref neighbor, direction);
-                    float neighborViscosity = nDef?.viscosity ?? 1f;
-                    float transfer = diff * nDef.gasPermeabilityCoeff * neighborViscosity * bias * 0.25f;
+                    float bias = ComputeBias(ref tile, ref neighbor, direction);
+
+                    float coeff = tileDef.gasPermeabilityCoeff;
+                    if (neighborMat != MaterialType.EMPTY)
+                    {
+                        var nDef = lib.Get(neighborMat);
+                        if (nDef != null)
+                            coeff = Mathf.Min(coeff, nDef.gasPermeabilityCoeff);
+                    }
+
+                    float transfer = diff * coeff * bias * 0.25f;
                     if (transfer <= 0f) continue;
 
-                    AddValue(ref tile,     -transfer);
-                    AddValue(ref neighbor,  transfer);
+                    AddValue(ref tile, -transfer);
+                    AddValue(ref neighbor, transfer);
                     PropagateMaterial(ref tile, ref neighbor);
                     grid.MarkDirty(npos);
                 }
-            }
 
-            // Disipación post-difusión para gas en atmósfera abierta
-            if (_property == GravityProperty.GasDensity)
-            {
-                ApplyDissipation(grid, lib);
+                if (_property == GravityProperty.GasDensity && tile.isAtmosphereOpen)
+                {
+                    float atmDiff = sourceVal - atmDensity;
+                    if (Mathf.Abs(atmDiff) > 0.01f)
+                    {
+                        float exchange = atmDiff * atmDiffusionRate;
+                        AddValue(ref tile, -exchange);
+                        if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
+                            tile.gasMaterial = config.atmosphereGas;
+                    }
+                }
             }
         }
 
-        /// <summary>
-        /// Gas: directional bias — gas rises more easily (direction.y < 0 = up gets bias 0.5).
-        /// Fluid: flows toward lower TileHeight — higher delta = stronger flow.
-        /// Scale 0.2f per height step: diff=1 → bias=0.7, diff=2 → bias=0.9, diff=-1 → bias=0.3.
-        /// </summary>
+        private bool IsInteractiveGas(ref TileData tile, MaterialLibrary lib)
+        {
+            if (tile.gasMaterial == MaterialType.EMPTY) return false;
+            var def = lib.Get(tile.gasMaterial);
+            return def != null && def.matterState == MatterState.Gas;
+        }
+
         private float ComputeBias(ref TileData source, ref TileData neighbor, Vector2Int direction)
         {
             if (_property == GravityProperty.GasDensity)
             {
-                if (direction.y < 0) return 0.50f;  // Arriba: sube por flotabilidad
-                if (direction.y > 0) return 0.15f; // Abajo: resistido por gravedad
-                return 0.40f;                     // Lateral: expansión horizontal
+                if (direction.y < 0) return 0.50f;
+                if (direction.y > 0) return 0.15f;
+                return 0.40f;
             }
 
-            // TileHeight is int enum: Deep=-2 … Tall=3
             int heightDiff = (int)source.height - (int)neighbor.height;
             return Mathf.Clamp01(0.5f + heightDiff * 0.2f);
         }
 
-        /// <summary>
-        /// Elimina gas con densidad baja en atmósfera abierta.
-        /// La energía se considera perdida a la atmósfera.
-        /// Aplica dissipationMultiplier por tipo de gas.
-        /// </summary>
-        private void ApplyDissipation(PhysicsGrid grid, MaterialLibrary lib)
-        {
-            foreach (var pos in grid.ActiveTiles)
-            {
-                ref var tile = ref grid.GetTile(pos);
-                if (!tile.isAtmosphereOpen || tile.gasDensity < _dissipationThreshold)
-                    continue;
-
-                var matDef = lib.Get(tile.gasMaterial);
-                float mult = matDef?.dissipationMultiplier ?? 1f;
-                float amount = _dissipationThreshold * mult;
-
-                tile.gasDensity -= amount;
-
-                if (tile.gasDensity <= 0f)
-                {
-                    tile.gasDensity = 0f;
-                    tile.gasMaterial = MaterialType.EMPTY;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Copies gasMaterial/liquidMaterial from source to neighbor once enough
-        /// numeric property has transferred. Clears source layer when depleted.
-        /// </summary>
         private void PropagateMaterial(ref TileData source, ref TileData neighbor)
         {
             if (_property == GravityProperty.GasDensity)

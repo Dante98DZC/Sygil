@@ -7,6 +7,6 @@ namespace PhysicsSystem.Diffusion
     public interface IDiffusionStrategy
     {
         TickType TickType { get; }
-        void Diffuse(PhysicsGrid grid, MaterialLibrary lib);
+        void Diffuse(PhysicsGrid grid, MaterialLibrary lib, SimulationConfig config);
     }
 }

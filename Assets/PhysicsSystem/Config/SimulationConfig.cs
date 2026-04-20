@@ -1,4 +1,5 @@
 using UnityEngine;
+using PhysicsSystem.Core;
 
 namespace PhysicsSystem.Config
 {
@@ -31,7 +32,7 @@ namespace PhysicsSystem.Config
         public float deactivationTolerance = 2.0f;
 
         [Header("Gas & Atmosphere")]
-        [Tooltip("Neutral atmospheric gas density (1 atm equivalent). Decay tends toward this value.")]
+        [Tooltip("DEPRECATED: Use atmosphereDensity instead. Kept for compatibility.")]
         public float gasBaseline           = 50f;
 
         [Tooltip("How much excess gas (above baseline) converts to pressure per tick.")]
@@ -45,5 +46,18 @@ namespace PhysicsSystem.Config
 
         [Tooltip("Structural damage dealt to implosion-vulnerable tiles.")]
         public float implosionDamage       = 40f;
+
+        [Header("Atmosphere")]
+        [Tooltip("Gas type that fills the atmosphere (e.g., AIR).")]
+        public MaterialType atmosphereGas = MaterialType.AIR;
+
+        [Tooltip("Baseline atmospheric gas density (1 atm equivalent).")]
+        public float atmosphereDensity    = 50f;
+
+        [Tooltip("Atmospheric temperature in Celsius.")]
+        public float atmosphereTemperature = 23f;
+
+        [Tooltip("Diffusion rate between tiles and atmosphere (0-1).")]
+        public float atmosphereDiffusionRate = 0.25f;
     }
 }
