@@ -33,6 +33,8 @@ namespace PhysicsSystem.Diffusion
 
             float atmTemperature = config.atmosphereTemperature;
             float atmDiffusionRate = config.atmosphereDiffusionRate;
+            const float maxTransferPerTick = 10f;
+            const float minThreshold = 1f;
 
             var snapshot = new Dictionary<Vector2Int, float>(activeTiles.Count);
             foreach (var pos in activeTiles)
@@ -57,10 +59,15 @@ namespace PhysicsSystem.Diffusion
 
                     float neighborVal = snapshot.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);
 
-                    float transfer = (sourceVal - neighborVal)
-                                     * Mathf.Min(coeff, _config.GetCoeff(nDef)) * 0.25f;
+                    float deltaT = sourceVal - neighborVal;
+                    if (Mathf.Abs(deltaT) < minThreshold) continue;
 
-                    if (transfer <= 0f) continue;
+                    float combinedCoeff = Mathf.Min(coeff, _config.GetCoeff(nDef));
+
+                    float transfer = deltaT * combinedCoeff * Mathf.Abs(deltaT) * 0.1f;
+                    transfer = Mathf.Clamp(transfer, -maxTransferPerTick, maxTransferPerTick);
+
+                    if (Mathf.Abs(transfer) < 0.01f) continue;
 
                     AddValue(ref tile, -transfer);
                     AddValue(ref neighbor, transfer);
@@ -70,10 +77,12 @@ namespace PhysicsSystem.Diffusion
                 if (_property == GradientProperty.Temperature && tile.isAtmosphereOpen)
                 {
                     float atmDiff = sourceVal - atmTemperature;
-                    if (Mathf.Abs(atmDiff) > 0.1f)
+                    if (Mathf.Abs(atmDiff) > minThreshold)
                     {
-                        float exchange = atmDiff * atmDiffusionRate;
-                        AddValue(ref tile, -exchange);
+                        float exchange = atmDiff * atmDiffusionRate * Mathf.Abs(atmDiff) * 0.1f;
+                        exchange = Mathf.Clamp(exchange, -maxTransferPerTick, maxTransferPerTick);
+                        if (Mathf.Abs(exchange) > 0.01f)
+                            AddValue(ref tile, -exchange);
                     }
                 }
             }

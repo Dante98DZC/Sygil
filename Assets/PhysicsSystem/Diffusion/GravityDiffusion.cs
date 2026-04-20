@@ -80,8 +80,9 @@ namespace PhysicsSystem.Diffusion
                             coeff = Mathf.Min(coeff, nDef.gasPermeabilityCoeff);
                     }
 
-                    float transfer = diff * coeff * bias * 0.25f;
-                    if (transfer <= 0f) continue;
+                    float transfer = diff * coeff * bias * Mathf.Abs(diff) * 0.1f;
+                    transfer = Mathf.Clamp(transfer, -10f, 10f);
+                    if (Mathf.Abs(transfer) < 0.01f) continue;
 
                     AddValue(ref tile, -transfer);
                     AddValue(ref neighbor, transfer);
@@ -92,9 +93,10 @@ namespace PhysicsSystem.Diffusion
                 if (_property == GravityProperty.GasDensity && tile.isAtmosphereOpen)
                 {
                     float atmDiff = sourceVal - atmDensity;
-                    if (Mathf.Abs(atmDiff) > 0.01f)
+                    if (Mathf.Abs(atmDiff) > 0.5f)
                     {
-                        float exchange = atmDiff * atmDiffusionRate;
+                        float exchange = atmDiff * atmDiffusionRate * Mathf.Abs(atmDiff) * 0.1f;
+                        exchange = Mathf.Clamp(exchange, -10f, 10f);
                         AddValue(ref tile, -exchange);
                         if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
                             tile.gasMaterial = config.atmosphereGas;
