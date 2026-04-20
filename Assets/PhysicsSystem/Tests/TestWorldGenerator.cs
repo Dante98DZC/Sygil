@@ -411,7 +411,8 @@ namespace PhysicsSystem.Tests
                 }
                 else
                 {
-                    tile.groundMaterial = MaterialType.EMPTY;
+                    // Tierra porosa que absorbe agua
+                    tile.groundMaterial = MaterialType.EARTH;
                     tile.height = TileHeight.Shallow;
                     tile.gasDensity = 0f;
                 }
@@ -436,9 +437,16 @@ namespace PhysicsSystem.Tests
         {
             if (x < 0 || x >= _gridSize || y < 0 || y >= _gridSize) return;
             var tile = _engine.Grid.GetTile(new Vector2Int(x, y));
+
+            // Opción A: tierra mojada (ground absorbe, líquido superficial)
+            // El suelo debe ser un material poroso que pueda absorber agua
+            if (tile.groundMaterial == MaterialType.EMPTY || tile.groundMaterial == MaterialType.STONE)
+                tile.groundMaterial = MaterialType.EARTH;
+
             tile.liquidMaterial = mat == MaterialType.WATER ? _liquid.liquidType : mat;
             tile.liquidVolume = vol;
             tile.temperature = temp;
+
             _engine.Grid.SetTile(new Vector2Int(x, y), tile);
         }
 
@@ -496,8 +504,8 @@ namespace PhysicsSystem.Tests
             TileHeight.Wall => MaterialType.STONE,
             TileHeight.Tall => MaterialType.STONE,
             TileHeight.Low => MaterialType.EARTH,
-            TileHeight.Shallow => MaterialType.WATER,
-            TileHeight.Deep => MaterialType.WATER,
+            TileHeight.Shallow => MaterialType.EARTH,  // Tierra que puede absorber agua
+            TileHeight.Deep => MaterialType.EARTH,
             _ => MaterialType.EMPTY,
         };
 

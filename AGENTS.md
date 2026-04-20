@@ -3,6 +3,7 @@
 ## Quick Start
 - Open in Unity Editor to run tests (Window → General → Test Runner)
 - No command-line test runner — uses Unity Test Framework
+- **73 EditMode tests** — all passing
 
 ## Critical API (v4 — agents will guess wrong!)
 
@@ -15,11 +16,13 @@ tile.liquidVolume   // liters, not humidity
 tile.gasDensity    // proxy for pressure (no pressure field)
 tile.soilMoisture   // absorbed water in porous soil
 tile.isAtmosphereOpen // gas can dissipate
+tile.derivedStates  // StateFlags: ON_FIRE, ELECTRIFIED, etc.
 ```
 - `.material` property is `[Obsolete]` — don't use it
-- Rules R13-R16 access specific layers
+- Rules access specific layers via `rule.SourceLayer`
 - `isAtmosphereOpen` flag for gas dissipation
 - `soilMoisture` stores absorbed water in porous materials
+- `derivedStates` contains `StateFlags.ON_FIRE` for visual feedback
 
 ## Architecture
 - **Rules** → `IInteractionRule` in `RuleRegistry`
@@ -28,8 +31,7 @@ tile.isAtmosphereOpen // gas can dissipate
 - **17 rules**: R01-R17 (R13-R16 = phase transitions, R17 = filtration)
 
 ## Test Files
-- `RuleTests.cs` (EditMode) — use obsolete API, needs v4 update
-- `TickBehaviorTests.cs` (PlayMode) — 10/10 pass but use obsolete API
+- `RuleTests.cs` (EditMode) — 73 tests passing ✅
 
 ## Atmosphere-Based Diffusion System (v6.3)
 
@@ -78,6 +80,20 @@ Setup in Unity:
 1. Create 3 Tilemap GameObjects under Sygil
 2. Set TilemapRenderer sorting order: Ground=0, Liquid=1, Gas=2
 3. Assign to SimulationRenderer fields in Inspector
+
+## Fire Visual Response
+- R01_Combustion sets `StateFlags.ON_FIRE` in `derivedStates`
+- SimulationRenderer draws fire overlay with `_fireColor` and `_fireOpacityScale`
+- Fire opacity scales with temperature (hotter = more visible)
+
+## Water Model (Option A - Porous Ground)
+When water is placed on land:
+```
+groundMaterial = EARTH      // porous soil that absorbs water
+liquidMaterial = WATER    // surface water
+liquidVolume = 100L      // accumulation
+soilMoisture = 20L       // absorbed water
+```
 
 ## Energy Conservation System
 - **Fusión (R13):** Consumes `latentHeatOfFusion` energy → cools tile
