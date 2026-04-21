@@ -2,7 +2,6 @@
 using UnityEngine;
 using PhysicsSystem.Core;
 using PhysicsSystem.Powers;
-using PhysicsSystem.Renderer;
 
 namespace PhysicsSystem.Tests
 {
@@ -164,7 +163,6 @@ namespace PhysicsSystem.Tests
     {
         [Header("Refs")]
         [SerializeField] private SimulationEngine _engine;
-        [SerializeField] private SimulationRenderer _renderer;
         [SerializeField] private PowerCaster _caster;
         [SerializeField] private CompiledPower _testPower;
 
@@ -255,9 +253,6 @@ namespace PhysicsSystem.Tests
             PlaceAllZones();
 
             _engine.Grid.RebuildAtmosphereFlags();
-
-            Debug.Log($"[TestWorldGenerator] Generated {_gridSize}x{_gridSize} - {_engine.Grid.ActiveTiles.Count} active");
-            _renderer?.Refresh();
         }
 
         public void LoadPreset(ScenarioPreset preset)

@@ -4,6 +4,10 @@ using PhysicsSystem.Config;
 using PhysicsSystem.Rules;
 using System.Collections.Generic;
 
+#if UNITY_DEBUG
+using System.Diagnostics;
+#endif
+
 namespace PhysicsSystem.Diffusion
 {
     public enum GravityProperty { Humidity, GasDensity }
@@ -15,6 +19,7 @@ namespace PhysicsSystem.Diffusion
     public class GravityDiffusion : IDiffusionStrategy
     {
         private readonly GravityProperty _property;
+        private static readonly Dictionary<Vector2Int, float> _snapshotCache = new(128);
 
         public TickType TickType => TickType.SLOW;
 
@@ -25,19 +30,26 @@ namespace PhysicsSystem.Diffusion
 
         public void Diffuse(PhysicsGrid grid, MaterialLibrary lib, SimulationConfig config)
         {
+            if (grid.ActiveTiles.Count == 0) return;
+
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
+            int maxTiles = 500;
+            if (activeTiles.Count > maxTiles)
+            {
+                activeTiles.RemoveRange(maxTiles, activeTiles.Count - maxTiles);
+            }
 
             float atmDensity = config.atmosphereDensity;
             float atmDiffusionRate = config.atmosphereDiffusionRate;
 
-            var snapshot = new Dictionary<Vector2Int, float>(activeTiles.Count);
+            _snapshotCache.Clear();
             foreach (var pos in activeTiles)
-                snapshot[pos] = GetValue(grid.GetTile(pos));
+                _snapshotCache[pos] = GetValue(grid.GetTile(pos));
 
             foreach (var pos in activeTiles)
             {
                 ref var tile = ref grid.GetTile(pos);
-                float sourceVal = snapshot[pos];
+                float sourceVal = _snapshotCache[pos];
 
                 // Condición de parada: volumen muy bajo = proceso innecesario
                 if (sourceVal <= 0.5f) continue;
@@ -57,9 +69,10 @@ namespace PhysicsSystem.Diffusion
                     ref var neighbor = ref grid.GetTile(npos);
                     var neighborMat = _property == GravityProperty.GasDensity ? neighbor.gasMaterial : neighbor.liquidMaterial;
 
-                    float neighborVal = snapshot.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);
+                    float neighborVal = _snapshotCache.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);
                     float diff = sourceVal - neighborVal;
-                    if (diff <= 0f) continue;
+                    float absDiff = Mathf.Abs(diff);
+                    if (absDiff < 0.5f) continue;
 
                     // Para líquidos: no transferir si vecino ya está lleno
                     if (_property == GravityProperty.Humidity)
@@ -80,9 +93,8 @@ namespace PhysicsSystem.Diffusion
                             coeff = Mathf.Min(coeff, nDef.gasPermeabilityCoeff);
                     }
 
-                    float transfer = diff * coeff * bias * Mathf.Abs(diff) * 0.1f;
+                    float transfer = diff * coeff * bias * absDiff * 0.1f;
                     transfer = Mathf.Clamp(transfer, -10f, 10f);
-                    if (Mathf.Abs(transfer) < 0.01f) continue;
 
                     AddValue(ref tile, -transfer);
                     AddValue(ref neighbor, transfer);
@@ -93,9 +105,10 @@ namespace PhysicsSystem.Diffusion
                 if (_property == GravityProperty.GasDensity && tile.isAtmosphereOpen)
                 {
                     float atmDiff = sourceVal - atmDensity;
-                    if (Mathf.Abs(atmDiff) > 0.5f)
+                    float absAtmDiff = Mathf.Abs(atmDiff);
+                    if (absAtmDiff > 0.5f)
                     {
-                        float exchange = atmDiff * atmDiffusionRate * Mathf.Abs(atmDiff) * 0.1f;
+                        float exchange = atmDiff * atmDiffusionRate * absAtmDiff * 0.1f;
                         exchange = Mathf.Clamp(exchange, -10f, 10f);
                         AddValue(ref tile, -exchange);
                         if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
@@ -157,5 +170,14 @@ namespace PhysicsSystem.Diffusion
             else
                 t.gasDensity = Mathf.Clamp(t.gasDensity + delta, 0f, 100f);
         }
+
+#if UNITY_DEBUG
+        [Conditional("DEBUG")]
+        private void LogTransfer(Vector2Int pos, Vector2Int npos, float amount)
+        {
+            string propName = _property == GravityProperty.Humidity ? "Humidity" : "Gas";
+            Debug.Log($"[Diffusion] {propName}: {pos} → {npos}: {amount:F2}");
+        }
+#endif
     }
 }

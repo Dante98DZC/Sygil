@@ -1,24 +1,24 @@
-# Unity
+# Unity generated
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
-Assets/External/
-Assets/Plugins/Editor/
+[Ll]ogs/
+*.log
+*.apy
+*.byte
+*.cache
 
-# VS
+# Unity Package Manager
+/[Pp]ackages/
+
+# Visual Studio
 *.suo
 *.user
 *.userprefs
 *.sln.docstates
 .vs/
-
-#OpenCode
-opencode.json
-
-#IaAgent_extra_context
-AGENTS_*
 
 # Rider
 .idea/
@@ -26,24 +26,13 @@ AGENTS_*
 # VS Code
 .vscode/
 
-# Mac
+# macOS
 .DS_Store
 ._*
 
-# Logs
-*[Ll]ogs/
-*.log
+# Tools
+opencode.json
+AGENTS_*
 
-# Unity generated
-*.apy
-*.byte
-*.cache
-*.frag
-*.pdf
-*.png
-*.rtf
-*.txt
-*.unitypackager
-
-# Post-processing
+# Post-processing artifacts
 Exr/

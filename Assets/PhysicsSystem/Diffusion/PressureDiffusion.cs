@@ -4,29 +4,42 @@ using PhysicsSystem.Core;
 using PhysicsSystem.Config;
 using PhysicsSystem.Rules;
 
+#if UNITY_DEBUG
+using System.Diagnostics;
+#endif
+
 namespace PhysicsSystem.Diffusion
 {
     public class PressureDiffusion : IDiffusionStrategy
     {
+        private static readonly Dictionary<Vector2Int, float> _snapshotCache = new(128);
+
         public TickType TickType => TickType.SLOW;
 
         public void Diffuse(PhysicsGrid grid, MaterialLibrary lib, SimulationConfig config)
         {
+            if (grid.ActiveTiles.Count == 0) return;
+
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
+            int maxTiles = 500;
+            if (activeTiles.Count > maxTiles)
+            {
+                activeTiles.RemoveRange(maxTiles, activeTiles.Count - maxTiles);
+            }
 
             float atmDensity = config.atmosphereDensity;
             float atmDiffusionRate = config.atmosphereDiffusionRate;
             const float maxTransferPerTick = 5f;
             const float minThreshold = 1f;
 
-            var snapshot = new Dictionary<Vector2Int, float>(activeTiles.Count);
+            _snapshotCache.Clear();
             foreach (var pos in activeTiles)
-                snapshot[pos] = grid.GetTile(pos).gasDensity;
+                _snapshotCache[pos] = grid.GetTile(pos).gasDensity;
 
             foreach (var pos in activeTiles)
             {
                 ref var tile = ref grid.GetTile(pos);
-                float sourceVal = snapshot[pos];
+                float sourceVal = _snapshotCache[pos];
                 if (sourceVal <= 0f) continue;
 
                 foreach (var npos in grid.GetNeighborPositions(pos))
@@ -35,16 +48,15 @@ namespace PhysicsSystem.Diffusion
                     var nDef = lib.Get(neighbor.groundMaterial);
                     if (nDef == null) continue;
 
-                    float neighborVal = snapshot.TryGetValue(npos, out float sv) ? sv : neighbor.gasDensity;
+                    float neighborVal = _snapshotCache.TryGetValue(npos, out float sv) ? sv : neighbor.gasDensity;
 
                     float deltaP = sourceVal - neighborVal;
-                    if (Mathf.Abs(deltaP) < minThreshold) continue;
+                    float absDeltaP = Mathf.Abs(deltaP);
+                    if (absDeltaP < minThreshold) continue;
 
                     float resistance = 1f - (neighbor.structuralIntegrity / 100f);
-                    float transfer = deltaP * resistance * Mathf.Abs(deltaP) * 0.05f;
+                    float transfer = deltaP * resistance * absDeltaP * 0.05f;
                     transfer = Mathf.Clamp(transfer, -maxTransferPerTick, maxTransferPerTick);
-
-                    if (Mathf.Abs(transfer) < 0.01f) continue;
 
                     tile.gasDensity = Mathf.Clamp(tile.gasDensity - transfer, 0f, 100f);
                     neighbor.gasDensity = Mathf.Clamp(neighbor.gasDensity + transfer, 0f, 100f);
@@ -54,9 +66,10 @@ namespace PhysicsSystem.Diffusion
                 if (tile.isAtmosphereOpen)
                 {
                     float atmDiff = sourceVal - atmDensity;
-                    if (Mathf.Abs(atmDiff) > minThreshold)
+                    float absAtmDiff = Mathf.Abs(atmDiff);
+                    if (absAtmDiff > minThreshold)
                     {
-                        float exchange = atmDiff * atmDiffusionRate * Mathf.Abs(atmDiff) * 0.05f;
+                        float exchange = atmDiff * atmDiffusionRate * absAtmDiff * 0.05f;
                         exchange = Mathf.Clamp(exchange, -maxTransferPerTick, maxTransferPerTick);
                         if (Mathf.Abs(exchange) > 0.01f)
                         {
@@ -69,5 +82,13 @@ namespace PhysicsSystem.Diffusion
                 }
             }
         }
+
+#if UNITY_DEBUG
+        [Conditional("DEBUG")]
+        private void LogTransfer(Vector2Int pos, Vector2Int npos, float amount)
+        {
+            Debug.Log($"[Diffusion] Pressure: {pos} → {npos}: {amount:F2}");
+        }
+#endif
     }
 }

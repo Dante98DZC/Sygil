@@ -115,7 +115,16 @@ namespace PhysicsSystem.Core
 
         internal void RunTick(TickType tickType)
         {
+            // Protección contra cuellos de botella - máximo 2000 tiles por tick
+            if (Grid.ActiveTiles.Count > 2000)
+            {
+                Debug.LogWarning($"[RunTick] Too many active tiles: {Grid.ActiveTiles.Count} - truncating processing");
+                return;
+            }
+
+#if UNITY_DEBUG
             Debug.Log($"[RunTick] {tickType} — ActiveTiles: {Grid.ActiveTiles.Count}");
+#endif
             _notifier.Snapshot(Grid);
 
             var snapshot = new List<Vector2Int>(Grid.ActiveTiles);
