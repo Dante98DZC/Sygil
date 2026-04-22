@@ -37,7 +37,7 @@ namespace PhysicsSystem.Core
                         liquidMaterial   = MaterialType.EMPTY,
                         liquidVolume     = 0f,
                         gasMaterial      = MaterialType.EMPTY,
-                        gasDensity      = 50f,
+                        gasConcentration  = 0f,
                         temperature    = 20f,
                         structuralIntegrity = 100f,
                         electricEnergy = 0f,

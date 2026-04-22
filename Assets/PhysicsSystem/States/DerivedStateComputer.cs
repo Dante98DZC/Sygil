@@ -29,13 +29,13 @@ namespace PhysicsSystem.States
 
                 StateFlags flags = StateFlags.NONE;
 
-                if (tile.temperature > 70f && def != null && def.structural.flammabilityCoeff > 0.5f)
+                if (tile.temperature > 70f && def != null && def.combustion.flammabilityCoeff > 0.5f)
                     flags |= StateFlags.ON_FIRE;
 
                 if (tile.electricEnergy > 50f)
                     flags |= StateFlags.ELECTRIFIED;
 
-                if (tile.gasDensity > 60f)
+                if (tile.gasConcentration > 60f)
                     flags |= StateFlags.PRESSURIZED;
 
                 if (tile.liquidVolume > 70f && tile.liquidMaterial != MaterialType.WATER)
@@ -44,7 +44,7 @@ namespace PhysicsSystem.States
                 if (tile.structuralIntegrity < 30f)
                     flags |= StateFlags.STRUCTURALLY_WEAK;
 
-                if (tile.gasDensity > 60f && tile.temperature > 40f)
+                if (tile.gasConcentration > 60f && tile.temperature > 40f)
                     flags |= StateFlags.VOLATILE;
 
                 bool allEmpty = tile.groundMaterial == MaterialType.EMPTY &&

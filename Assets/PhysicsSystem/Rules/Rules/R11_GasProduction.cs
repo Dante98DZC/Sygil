@@ -12,8 +12,8 @@ namespace PhysicsSystem.Rules.Rules
     ///   - Combustión activa (ON_FIRE): humo y gases de combustión
     ///   - Material GAS en groundMaterial: emisión continua desde la fuente
     ///
-    /// El gas producido empuja gasDensity por encima del baseline (50),
-    /// lo que causa presión diferencial positiva.
+    /// El gas producido incrementa gasConcentration del tile.
+    /// La concentración es emergente — resultado de fuentes activas.
     /// </summary>
     public class R11_GasProduction : IInteractionRule
     {
@@ -26,7 +26,7 @@ namespace PhysicsSystem.Rules.Rules
         private readonly float _gasCap;
 
         /// <param name="productionRate">Gas producido por tick cuando ON_FIRE (SimulationConfig.gasProductionRate)</param>
-        /// <param name="gasCap">Límite superior de gasDensity (normalmente 100f)</param>
+        /// <param name="gasCap">Límite superior de gasConcentration (normalmente 100f)</param>
         public R11_GasProduction(float productionRate = 5f, float gasCap = 100f)
         {
             _productionRate = productionRate;
@@ -47,7 +47,7 @@ namespace PhysicsSystem.Rules.Rules
             // Combustión activa produce más gas que una fuente pasiva
             float rate = onFire ? _productionRate : _productionRate * 0.5f;
 
-            tile.gasDensity = Mathf.Clamp(tile.gasDensity + rate, 0f, _gasCap);
+            tile.gasConcentration = Mathf.Clamp(tile.gasConcentration + rate, 0f, _gasCap);
         }
     }
 }

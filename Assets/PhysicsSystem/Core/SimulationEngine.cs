@@ -67,7 +67,7 @@ namespace PhysicsSystem.Core
             _ruleRegistry.AddRule(new Rules.Rules.R06_PressureRelease());
             _ruleRegistry.AddRule(new Rules.Rules.R07_StructuralCollapse());
             _ruleRegistry.AddRule(new Rules.Rules.R11_GasProduction(config.gasProductionRate, config.propertyCap));
-            _ruleRegistry.AddRule(new Rules.Rules.R12_GasPressure(config.pressureFromGasCoeff, config.atmosphereDensity));
+            _ruleRegistry.AddRule(new Rules.Rules.R12_GasPressure(config.pressureFromGasCoeff, config.atmosphereConcentration));
 
             // ── Humidity ──────────────────────────────────────────────────────
             _ruleRegistry.AddRule(new Rules.Rules.R08_SlowEvaporation());
@@ -87,7 +87,7 @@ namespace PhysicsSystem.Core
                 new Diffusion.GradientDiffusion(Diffusion.GradientProperty.Temperature),
                 new Diffusion.GradientDiffusion(Diffusion.GradientProperty.ElectricEnergy),
                 new Diffusion.GravityDiffusion(Diffusion.GravityProperty.Humidity),
-                new Diffusion.GravityDiffusion(Diffusion.GravityProperty.GasDensity),
+                new Diffusion.GravityDiffusion(Diffusion.GravityProperty.GasConcentration),
                 new Diffusion.PressureDiffusion()
             };
 

@@ -114,7 +114,7 @@ namespace PhysicsSystem.Rules.Rules
     /// <summary>
     /// Un líquido en liquidMaterial hierve cuando su temperatura supera
     /// heatingTransition.triggerTemperature. El gas resultante pasa a gasMaterial.
-    /// Si ya hay gas en gasMaterial, la ebullición solo incrementa gasDensity.
+    /// Si ya hay gas en gasMaterial, la ebullición solo incrementa gasConcentration.
     /// Presuriza y transfiere calor a los vecinos.
     /// </summary>
     public class R15_Boiling : IInteractionRule
@@ -172,14 +172,14 @@ namespace PhysicsSystem.Rules.Rules
                 tile.liquidMaterial = MaterialType.EMPTY;
 
             float gasProduced = volumeToEvaporate * (GasDensityGain / 50f);
-            tile.gasDensity = Mathf.Clamp(tile.gasDensity + gasProduced, 0f, 100f);
+            tile.gasConcentration = Mathf.Clamp(tile.gasConcentration + gasProduced, 0f, 100f);
             tile.temperature = Mathf.Clamp(tile.temperature - _latentHeat, _minTemperature, _maxTemperature);
 
             for (int i = 0; i < neighbors.Length; i++)
             {
                 float htc = neighborDefs[i] != null ? neighborDefs[i].heatTransferCoeff : 0f;
-                neighbors[i].gasDensity = Mathf.Clamp(
-                    neighbors[i].gasDensity + NeighborDensityGain * htc, 0f, 100f);
+                neighbors[i].gasConcentration = Mathf.Clamp(
+                    neighbors[i].gasConcentration + NeighborDensityGain * htc, 0f, 100f);
             }
         }
     }
@@ -231,7 +231,7 @@ namespace PhysicsSystem.Rules.Rules
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
             tile.gasMaterial = MaterialType.EMPTY;
-            tile.gasDensity  = Mathf.Clamp(tile.gasDensity - GasDensityLoss, 0f, 100f);
+            tile.gasConcentration = Mathf.Clamp(tile.gasConcentration - GasDensityLoss, 0f, 100f);
 
             float capacity = tile.LiquidCapacity;
             if (capacity > 0f)

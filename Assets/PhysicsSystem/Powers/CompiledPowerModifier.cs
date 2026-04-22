@@ -157,7 +157,7 @@ namespace PhysicsSystem.Powers
 
                 // Ray se detiene al impactar un tile que bloquea movimiento
                 var def = grid.GetMaterialDef(pos);
-                if (def != null && def.blocksMovement && step > 0) break;
+                if (def != null && def.BlocksMovement && step > 0) break;
             }
         }
 
@@ -226,13 +226,13 @@ namespace PhysicsSystem.Powers
                 case PropertyTarget.Temperature:
                     tile.temperature        = Mathf.Clamp(tile.temperature        + delta, 0f, 100f); break;
                 case PropertyTarget.Pressure:
-                    tile.gasDensity         = Mathf.Clamp(tile.gasDensity         + delta, 0f, 100f); break;
+                    tile.gasConcentration  = Mathf.Clamp(tile.gasConcentration  + delta, 0f, 100f); break;
                 case PropertyTarget.Humidity:
                     tile.liquidVolume       = Mathf.Clamp(tile.liquidVolume       + delta, 0f, 100f); break;
                 case PropertyTarget.ElectricEnergy:
                     tile.electricEnergy     = Mathf.Clamp(tile.electricEnergy     + delta, 0f, 100f); break;
                 case PropertyTarget.GasDensity:
-                    tile.gasDensity         = Mathf.Clamp(tile.gasDensity         + delta, 0f, 100f); break;
+                    tile.gasConcentration  = Mathf.Clamp(tile.gasConcentration  + delta, 0f, 100f); break;
                 case PropertyTarget.StructuralIntegrity:
                     tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity + delta, 0f, 100f); break;
             }
@@ -241,10 +241,10 @@ namespace PhysicsSystem.Powers
         private static float ReadProperty(TileData tile, PropertyTarget target) => target switch
         {
             PropertyTarget.Temperature        => tile.temperature,
-            PropertyTarget.Pressure           => tile.gasDensity,
+            PropertyTarget.Pressure           => tile.gasConcentration,
             PropertyTarget.Humidity           => tile.liquidVolume,
             PropertyTarget.ElectricEnergy     => tile.electricEnergy,
-            PropertyTarget.GasDensity         => tile.gasDensity,
+            PropertyTarget.GasDensity         => tile.gasConcentration,
             PropertyTarget.StructuralIntegrity => tile.structuralIntegrity,
             _                                  => 0f
         };

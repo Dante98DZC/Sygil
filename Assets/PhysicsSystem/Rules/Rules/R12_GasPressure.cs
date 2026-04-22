@@ -7,15 +7,13 @@ namespace PhysicsSystem.Rules.Rules
     /// <summary>
     /// R12 — GasPressure (STANDARD)
     ///
-    /// Convierte el exceso o déficit de gas respecto al baseline (50 = 1 atm)
-    /// en presión diferencial sobre el tile:
+    /// Convierte desviación de concentración de gas en presión diferencial.
+    /// Con pressureFromGasCoeff = 0 esta regla está desactivada.
     ///
-    ///   gasDensity > 50  →  presión positiva  →  puede explotar (R05)
-    ///   gasDensity < 50  →  presión negativa  →  puede implosionar (R05)
-    ///   gasDensity = 50  →  equilibrio, no genera presión
+    ///   gasConcentration > 0  →  presión positiva  →  puede explotar (R05)
+    ///   gasConcentration = 0  →  equilibrio, no genera presión
     ///
-    /// La presión acumulada es aditiva — R12 no reemplaza la presión existente,
-    /// la incrementa. DecaySystem la devuelve a 0 si no hay fuente activa.
+    /// La presión acumulada es aditiva. DecaySystem la disipa si no hay fuente activa.
     /// </summary>
     public class R12_GasPressure : IInteractionRule
     {
@@ -25,26 +23,23 @@ namespace PhysicsSystem.Rules.Rules
         public MaterialLayer SourceLayer => MaterialLayer.Gas;
 
         private readonly float _pressureCoeff;
-        private readonly float _gasBaseline;
+        private readonly float _atmConcentration;
 
-        /// <param name="pressureCoeff">Cuánta presión genera cada unidad de exceso de gas (SimulationConfig.pressureFromGasCoeff)</param>
-        /// <param name="gasBaseline">Baseline atmosférico (SimulationConfig.gasBaseline)</param>
-        public R12_GasPressure(float pressureCoeff = 0.3f, float gasBaseline = 50f)
+        public R12_GasPressure(float pressureCoeff = 0f, float atmConcentration = 0f)
         {
             _pressureCoeff = pressureCoeff;
-            _gasBaseline   = gasBaseline;
+            _atmConcentration = atmConcentration;
         }
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
-            // Solo actúa cuando el gas se desvía del baseline
-            return !Mathf.Approximately(tile.gasDensity, _gasBaseline);
+            return !Mathf.Approximately(tile.gasConcentration, _atmConcentration);
         }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
-            float delta = tile.gasDensity - _gasBaseline;
-            tile.gasDensity = Mathf.Clamp(tile.gasDensity + delta * _pressureCoeff, 0f, 100f);
+            float delta = tile.gasConcentration - _atmConcentration;
+            tile.gasConcentration = Mathf.Clamp(tile.gasConcentration + delta * _pressureCoeff, 0f, 100f);
         }
     }
 }

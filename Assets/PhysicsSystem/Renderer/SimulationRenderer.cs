@@ -137,7 +137,7 @@ namespace PhysicsSystem.Renderer
                     var pos = new Vector2Int(x, y);
                     var tile = grid.GetTile(pos);
                     tempValues[pos] = tile.temperature;
-                    gasValues[pos] = tile.gasDensity;
+                    gasValues[pos] = tile.gasConcentration;
                 }
         }
 
@@ -146,8 +146,8 @@ namespace PhysicsSystem.Renderer
             if (infoText == null) return;
 
             float avgTemp = GetAverage(tempValues, 20f);
-            float avgGas = GetAverage(gasValues, 50f);
-            float pressure = avgGas - 50f;
+            float avgGas = GetAverage(gasValues, 0f);
+            float pressure = avgGas;
 
             string tempLabel = avgTemp < 20 ? "COLD" : avgTemp > 60 ? "HOT" : "TEMP";
 
@@ -178,7 +178,7 @@ namespace PhysicsSystem.Renderer
                     if (useTemperatureOverlay)
                         col = TempToColor(tile.temperature);
                     else if (useGasDensityOverlay)
-                        col = GasToColor(tile.gasDensity);
+                        col = GasToColor(tile.gasConcentration);
 
                     overlayMap.SetTile(cell, whiteTile);
                     overlayMap.SetTileFlags(cell, TileFlags.None);
@@ -244,14 +244,14 @@ namespace PhysicsSystem.Renderer
             gasMap.SetTile(cell, null);
             bool onFire = (tile.derivedStates & StateFlags.ON_FIRE) != 0;
             bool hasVisibleGas = tile.gasMaterial != MaterialType.EMPTY
-                                 && tile.gasDensity > gasVisibilityThreshold;
+                                 && tile.gasConcentration > gasVisibilityThreshold;
 
             if (hasVisibleGas || onFire)
             {
                 if (hasVisibleGas)
                     gasMap.SetTile(cell, visualLib.Get(tile.gasMaterial));
 
-                float gasA = Mathf.Clamp01(tile.gasDensity / 100f) * gasOpacityScale;
+                float gasA = Mathf.Clamp01(tile.gasConcentration / 100f) * gasOpacityScale;
                 float fireA = onFire ? fireOpacityScale * (tile.temperature / 100f) : 0f;
                 Color c = onFire ? fireColor : Color.white;
                 c.a = Mathf.Clamp01(gasA + fireA);

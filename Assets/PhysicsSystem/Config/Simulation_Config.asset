@@ -10,22 +10,32 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8c4a13508f9a234aaf7e9ce05c6d339, type: 3}
-  m_Name: SimulationConfig
+  m_Name: Simulation_Config
   m_EditorClassIdentifier: 
   tickFast: 0.1
   tickStandard: 0.3
   tickSlow: 0.5
   tickIntegrity: 1
-  maxRulesPerTile: 12
+  maxRulesPerTile: 5
   propertyCap: 100
   propertyFloor: 0
+  minTemperature: 0
+  maxTemperature: 100
   decayTemperature: 2
   decayPressure: 3
   decayHumidity: 0.5
   decayGasDensity: 1
   deactivationTolerance: 2
-  gasBaseline: 50
-  pressureFromGasCoeff: 0.3
+  atmosphereGas: 19
+  atmosphereTemperature: 23
+  atmosphereConcentration: 0
+  atmosphereDiffusionRate: 0.1
   gasProductionRate: 5
+  gasVisibilityThreshold: 15
+  ventThreshold: 20
+  ventRate: 15
+  gasIgnitionThreshold: 10
+  pressureFromGasCoeff: 0
   implosionThreshold: 20
   implosionDamage: 40
+  maxDiffusionTilesPerTick: 1024

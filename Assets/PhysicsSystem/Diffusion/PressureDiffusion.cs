@@ -27,14 +27,14 @@ namespace PhysicsSystem.Diffusion
             if (activeTiles.Count > maxTiles)
                 activeTiles.RemoveRange(maxTiles, activeTiles.Count - maxTiles);
 
-            float atmDensity = config.atmosphereDensity;
+            float atmDensity = config.atmosphereConcentration;
             float atmDiffusionRate = config.atmosphereDiffusionRate;
             const float maxTransferPerTick = 5f;
             const float minThreshold = 1f;
 
             _snapshotCache.Clear();
             foreach (var pos in activeTiles)
-                _snapshotCache[pos] = grid.GetTile(pos).gasDensity;
+                _snapshotCache[pos] = grid.GetTile(pos).gasConcentration;
 
             foreach (var pos in activeTiles)
             {
@@ -48,7 +48,7 @@ namespace PhysicsSystem.Diffusion
                     var nDef = lib.Get(neighbor.groundMaterial);
                     if (nDef == null) continue;
 
-                    float neighborVal = _snapshotCache.TryGetValue(npos, out float sv) ? sv : neighbor.gasDensity;
+                    float neighborVal = _snapshotCache.TryGetValue(npos, out float sv) ? sv : neighbor.gasConcentration;
 
                     float deltaP = sourceVal - neighborVal;
                     float absDeltaP = Mathf.Abs(deltaP);
@@ -58,8 +58,8 @@ namespace PhysicsSystem.Diffusion
                     float transfer = deltaP * resistance * absDeltaP * 0.05f;
                     transfer = Mathf.Clamp(transfer, -maxTransferPerTick, maxTransferPerTick);
 
-                    tile.gasDensity = Mathf.Clamp(tile.gasDensity - transfer, 0f, 100f);
-                    neighbor.gasDensity = Mathf.Clamp(neighbor.gasDensity + transfer, 0f, 100f);
+                    tile.gasConcentration = Mathf.Clamp(tile.gasConcentration - transfer, 0f, 100f);
+                    neighbor.gasConcentration = Mathf.Clamp(neighbor.gasConcentration + transfer, 0f, 100f);
                     grid.MarkDirty(npos);
                 }
 
@@ -73,8 +73,8 @@ namespace PhysicsSystem.Diffusion
                         exchange = Mathf.Clamp(exchange, -maxTransferPerTick, maxTransferPerTick);
                         if (Mathf.Abs(exchange) > 0.01f)
                         {
-                            tile.gasDensity = Mathf.Clamp(tile.gasDensity - exchange, 0f, 100f);
-                            if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
+                            tile.gasConcentration = Mathf.Clamp(tile.gasConcentration - exchange, 0f, 100f);
+                            if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity + 5f)
                                 tile.gasMaterial = config.atmosphereGas;
                             grid.MarkDirty(pos);
                         }

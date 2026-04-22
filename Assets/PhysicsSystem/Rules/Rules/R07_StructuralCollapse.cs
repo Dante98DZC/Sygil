@@ -41,7 +41,7 @@ namespace PhysicsSystem.Rules.Rules
 
             for (int i = 0; i < neighbors.Length; i++)
             {
-                neighbors[i].gasDensity = Mathf.Clamp(neighbors[i].gasDensity + 10f, 0f, 100f);
+                neighbors[i].gasConcentration = Mathf.Clamp(neighbors[i].gasConcentration + 10f, 0f, 100f);
                 neighbors[i].dirty    = true;
             }
 

@@ -10,7 +10,7 @@ namespace PhysicsSystem.Core
     /// Aplica decay por propiedad cada SLOW tick, después de diffusion.
     /// Es el único árbitro de si un tile es estable.
     ///
-    /// gasDensity decae hacia atmosphereDensity en ambas direcciones.
+    /// gasConcentration es manejada por difusión con atmósfera (no hay decay forzado).
     /// Modela entropía: los gradientes tienden al equilibrio.
     /// </summary>
     public class DecaySystem
@@ -64,15 +64,14 @@ namespace PhysicsSystem.Core
             if (!onFire)
                 tile.temperature = Mathf.Max(0f, tile.temperature - _config.decayTemperature);
 
-            // gasDensity: ya no hay decay forzado hacia baseline
-            // La atmósfera hace difusión naturalmente - tiles abiertos tienden a atmosphereDensity
-            // Solo aplicamos decay mínimo si el tile NO está abierto a atmósfera
+            // gasConcentration: sin decay forzado — difusión con atmósfera lo maneja
+            // Tiles abiertos tienden a atmosphereConcentration (normalmente 0%)
             if (!tile.isAtmosphereOpen)
             {
-                tile.gasDensity = Mathf.MoveTowards(
-                    tile.gasDensity,
-                    _config.atmosphereDensity,
-                    _config.decayGasDensity);
+                tile.gasConcentration = Mathf.MoveTowards(
+                    tile.gasConcentration,
+                    _config.atmosphereConcentration,
+                    _config.decayGasConcentration);
             }
 
             // Electricidad: zeroing si no hubo fuente este tick
@@ -87,7 +86,7 @@ namespace PhysicsSystem.Core
         ///
         /// Un tile es estable cuando:
         /// - Su temperatura está cerca de la temperatura atmosférica
-        /// - Su gasDensity está cerca de la densidad atmosférica (solo si NO está abierto a atmósfera)
+        /// - Su gasConcentration está cerca de la concentración atmosférica (solo si NO está abierto a atmósfera)
         /// - No tiene líquido activo
         /// - Su integridad estructural está en baseline
         /// - Las tres capas de material están en EMPTY
@@ -96,25 +95,19 @@ namespace PhysicsSystem.Core
         {
             float t = _config.deactivationTolerance;
 
-            // Temperatura estable cerca de atmTemperature
             if (Mathf.Abs(tile.temperature - _config.atmosphereTemperature) > t) return false;
             if (tile.electricEnergy > t) return false;
 
-            // gasDensity: estable si NO está abierto a atmósfera (ya difunde naturalmente)
-            // Para tiles abiertos a atmósfera, no requerimos gasDensity específico
             if (!tile.isAtmosphereOpen)
             {
-                if (Mathf.Abs(tile.gasDensity - _config.atmosphereDensity) > t) return false;
+                if (Mathf.Abs(tile.gasConcentration - _config.atmosphereConcentration) > t) return false;
             }
 
-            // liquidVolume: estable si el tile está seco
             if (tile.liquidVolume > t) return false;
 
-            // structuralIntegrity: inestable solo si está POR DEBAJO del baseline.
             float integrityBaseline = def != null ? def.structural.integrityBase : 0f;
             if (tile.structuralIntegrity < integrityBaseline - t) return false;
 
-            // Tile vacío que antes no lo era → una transición pendiente de procesar
             bool allEmpty = tile.groundMaterial == MaterialType.EMPTY &&
                             tile.liquidMaterial  == MaterialType.EMPTY &&
                             tile.gasMaterial     == MaterialType.EMPTY;

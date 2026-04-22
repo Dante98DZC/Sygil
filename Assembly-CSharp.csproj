@@ -48,8 +48,8 @@
     <Analyzer Include="F:\David\Programas\Game_Engines\Unity\Instalado\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\PhysicsSystem\Tests\PlayMode\TickBehaviorTests.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R07_StructuralCollapse.cs" />
+    <Compile Include="Assets\PhysicsSystem\Core\PhysicsTypes.cs" />
     <Compile Include="Assets\PhysicsSystem\Core\SimulationEngine.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R05_PressureExplosion.cs" />
     <Compile Include="Assets\PhysicsSystem\Player\CameraController.cs" />
@@ -66,7 +66,6 @@
     <Compile Include="Assets\PhysicsSystem\Debug\SimulationDebugPanel.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\IInteractionRule.cs" />
     <Compile Include="Assets\PhysicsSystem\Core\PhaseTransition.cs" />
-    <Compile Include="Assets\PhysicsSystem\Core\MaterialLayer.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\ISimulationModifier.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R08_SlowEvaporation.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\PowerCaster.cs" />
@@ -78,9 +77,7 @@
     <Compile Include="Assets\PhysicsSystem\Config\SimulationConfig.cs" />
     <Compile Include="Assets\PhysicsSystem\States\StateFlags.cs" />
     <Compile Include="Assets\PhysicsSystem\Diffusion\DiffusionStrategy.cs" />
-    <Compile Include="Assets\PhysicsSystem\Core\MaterialPresets.cs" />
     <Compile Include="Assets\PhysicsSystem\Player\PlayerActionChannel.cs" />
-    <Compile Include="Assets\PhysicsSystem\Core\MaterialSubData.cs" />
     <Compile Include="Assets\PhysicsSystem\Renderer\Overlay\OverlayMode.cs" />
     <Compile Include="Assets\PhysicsSystem\Tests\TestWorldGenerator.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R_PhaseTransitions.cs" />

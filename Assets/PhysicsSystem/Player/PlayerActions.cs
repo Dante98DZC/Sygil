@@ -52,7 +52,7 @@ namespace PhysicsSystem.Player
                     tile.temperature    = Mathf.Clamp(tile.temperature    + 40f, 0f, 100f);
                     break;
                 case ActionType.PRESSURE_INJECT:
-                    tile.gasDensity     = Mathf.Clamp(tile.gasDensity     + 60f, 0f, 100f);
+                    tile.gasConcentration  = Mathf.Clamp(tile.gasConcentration  + 60f, 0f, 100f);
                     break;
                 case ActionType.ELECTRIC_PULSE:
                     tile.electricEnergy = Mathf.Clamp(tile.electricEnergy + 80f, 0f, 100f);
@@ -64,7 +64,7 @@ namespace PhysicsSystem.Player
                     tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity + 40f, 0f, 100f);
                     break;
                 case ActionType.GAS_EXTRACT:
-                    tile.gasDensity     = Mathf.Clamp(tile.gasDensity     - 80f, 0f, 100f);
+                    tile.gasConcentration  = Mathf.Clamp(tile.gasConcentration  - 80f, 0f, 100f);
                     break;
             }
 

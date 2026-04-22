@@ -65,9 +65,9 @@ namespace PhysicsSystem.Renderer
             {
                 OverlayMode.None              => Color.clear,
                 OverlayMode.Temperature        => Temperature(tile.temperature),
-                OverlayMode.GasMaterial      => GasMaterial(tile.gasMaterial, tile.gasDensity),
+                OverlayMode.GasMaterial      => GasMaterial(tile.gasMaterial, tile.gasConcentration),
                 OverlayMode.LiquidMaterial   => LiquidMaterial(tile.liquidMaterial, tile.liquidVolume),
-                OverlayMode.Pressure         => Pressure(tile.gasDensity),
+                OverlayMode.Pressure         => Pressure(tile.gasConcentration),
                 OverlayMode.ElectricEnergy  => ElectricGradient(tile.electricEnergy),
                 OverlayMode.Structural       => StructuralDamage(tile.structuralIntegrity),
                 OverlayMode.DerivedStates   => DerivedStates(tile.derivedStates),
@@ -158,7 +158,7 @@ namespace PhysicsSystem.Renderer
             return result;
         }
 
-        // ── Presión — gradiente azul claro por gasDensity ────────────────────
+        // ── Presión — gradiente azul claro por gasConcentration ────────────────────
         private static Color Pressure(float density)
         {
             return SimpleGradient(density, _colorPressure);
@@ -216,9 +216,9 @@ namespace PhysicsSystem.Renderer
         private static Color Combined(TileData tile)
         {
             float temp  = tile.temperature    / 100f;
-            float press = tile.gasDensity    / 100f;
-            float elec  = tile.electricEnergy / 100f;
-            float gas   = tile.gasDensity     / 100f;
+            float press = tile.gasConcentration / 100f;
+            float gas   = tile.gasConcentration / 100f;
+            float elec = tile.electricEnergy   / 100f;
 
             Color c = Color.clear;
             c += new Color(1f, 0.2f, 0f) * temp;

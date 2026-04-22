@@ -16,57 +16,67 @@ namespace PhysicsSystem.Config
         public int   maxRulesPerTile = 5;
         public float propertyCap     = 100f;
         public float propertyFloor   = 0f;
-        public float minTemperature = 0f;
-        public float maxTemperature = 100f;
+        public float minTemperature  = 0f;
+        public float maxTemperature  = 100f;
 
         [Header("Decay Rates")]
-        public float decayTemperature = 2.0f;
-        public float decayPressure    = 3.0f;
-        public float decayHumidity    = 0.5f;
-        public float decayGasDensity  = 1.0f;
-        // electricEnergy: no rate — zeroed behaviourally if no source this tick (DecaySystem)
-        // structuralIntegrity: rate = 0, no self-repair (spec invariant)
+        public float decayTemperature    = 2.0f;
+        public float decayGasConcentration = 1.0f;
+        public float decayHumidity       = 0.5f;
+        // electricEnergy: zeroed behaviourally if no source this tick (DecaySystem)
+        // structuralIntegrity: no self-repair (spec invariant)
 
         [Header("Deactivation")]
-        [Tooltip("Max distance from baseline for a property to be considered stable")]
+        [Tooltip("Max distance from baseline for a property to be considered stable.")]
         public float deactivationTolerance = 2.0f;
-
-        [Header("Gas & Atmosphere")]
-        [Tooltip("DEPRECATED: Use atmosphereDensity instead. Kept for compatibility.")]
-        public float gasBaseline           = 50f;
-
-        [Tooltip("How much excess gas (above baseline) converts to pressure per tick.")]
-        public float pressureFromGasCoeff  = 0.3f;
-
-        [Tooltip("Gas produced per tick by an actively burning tile (ON_FIRE).")]
-        public float gasProductionRate     = 5f;
-
-        [Tooltip("Pressure below which implosion collapses fragile materials.")]
-        public float implosionThreshold    = 20f;
-
-        [Tooltip("Structural damage dealt to implosion-vulnerable tiles.")]
-        public float implosionDamage       = 40f;
 
         [Header("Atmosphere")]
         [Tooltip("Gas type that fills the atmosphere (e.g., AIR).")]
         public MaterialType atmosphereGas = MaterialType.AIR;
 
-        [Tooltip("Baseline atmospheric gas density (1 atm equivalent).")]
-        public float atmosphereDensity    = 50f;
-
         [Tooltip("Atmospheric temperature in Celsius.")]
         public float atmosphereTemperature = 23f;
 
-        [Tooltip("Diffusion rate between tiles and atmosphere (0-1).")]
+        [Tooltip("Gas concentration outside tiles. 0 = vacuum (default). " +
+                 "Raise only for dense-atmosphere levels (e.g. natural gas cave).")]
+        [Range(0f, 100f)]
+        public float atmosphereConcentration = 0f;
+
+        [Tooltip("Diffusion rate between tiles and atmosphere (0–1).")]
+        [Range(0f, 1f)]
         public float atmosphereDiffusionRate = 0.10f;
 
-        [Tooltip("Forced escape rate when gas density exceeds atmosphereVentThreshold.")]
-        public float atmosphereVentRate = 25f;
+        [Header("Gas — Concentration")]
+        [Tooltip("Gas produced per tick by an actively burning tile (ON_FIRE).")]
+        public float gasProductionRate = 5f;
 
-        [Tooltip("Minimum gas density for active venting to trigger (above baseline).")]
-        public float atmosphereVentThreshold = 60f;
+        [Tooltip("Minimum concentration for gas to render. 15 = light haze, 40 = fully opaque.")]
+        [Range(0f, 100f)]
+        public float gasVisibilityThreshold = 15f;
 
-        [Tooltip("Max tiles to process per diffusion tick. Default 1024 = 32x32 grid.")]
+        [Tooltip("Concentration above which an open tile vents actively to the exterior.")]
+        [Range(0f, 100f)]
+        public float ventThreshold = 20f;
+
+        [Tooltip("Concentration percentage that escapes per tick during active venting.")]
+        [Range(0f, 50f)]
+        public float ventRate = 15f;
+
+        [Tooltip("Minimum gas concentration for R10 to evaluate flammable gas ignition.")]
+        [Range(0f, 100f)]
+        public float gasIgnitionThreshold = 10f;
+
+        [Header("Pressure & Implosion")]
+        [Tooltip("How much excess gas (above atmosphere) converts to pressure per tick.")]
+        public float pressureFromGasCoeff = 0f;
+
+        [Tooltip("Pressure below which implosion collapses fragile materials.")]
+        public float implosionThreshold = 20f;
+
+        [Tooltip("Structural damage dealt to implosion-vulnerable tiles.")]
+        public float implosionDamage = 40f;
+
+        [Tooltip("Max tiles processed per diffusion tick. Default 1024 = 32×32 grid.")]
         public int maxDiffusionTilesPerTick = 1024;
     }
 }

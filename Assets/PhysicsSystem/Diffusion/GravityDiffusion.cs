@@ -10,11 +10,17 @@ using System.Diagnostics;
 
 namespace PhysicsSystem.Diffusion
 {
-    public enum GravityProperty { Humidity, GasDensity }
+    public enum GravityProperty { Humidity, GasConcentration }
 
     /// <summary>
-    /// GasDensity — isotropic spread with atmosphere exchange.
-    /// Humidity   — height-based flow.
+    /// GasConcentration — isotropic spread with atmosphere exchange.
+    /// Humidity        — height-based flow.
+    ///
+    /// El modelo de gas concentration:
+    ///   0% = vacío absoluto
+    ///   100% = tile saturado
+    ///   La atmósfera exterior tiene atmosphereConcentration (normalmente 0%).
+    ///   Tiles abiertos al exterior difunden hacia 0%, no hacia un baseline artificial.
     /// </summary>
     public class GravityDiffusion : IDiffusionStrategy
     {
@@ -33,8 +39,10 @@ namespace PhysicsSystem.Diffusion
             if (grid.ActiveTiles.Count == 0) return;
 
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
-            float atmDensity = config.atmosphereDensity;
+            float atmConcentration = config.atmosphereConcentration;
             float atmDiffusionRate = config.atmosphereDiffusionRate;
+            float ventThreshold    = config.ventThreshold;
+            float ventRate        = config.ventRate;
             const float FIXED_DELTA_TIME = 0.016f;
             int maxTiles = config.maxDiffusionTilesPerTick;
 
@@ -50,30 +58,27 @@ namespace PhysicsSystem.Diffusion
                 ref var tile = ref grid.GetTile(pos);
                 float sourceVal = _snapshotCache[pos];
 
-                // Condición de parada: volumen muy bajo = proceso innecesario
                 if (sourceVal <= 0.5f) continue;
 
-                if (_property == GravityProperty.GasDensity)
+                if (_property == GravityProperty.GasConcentration)
                 {
                     if (!IsInteractiveGas(ref tile, lib) && sourceVal <= 0f) continue;
                 }
-                else if (sourceVal <= 0f) continue;
 
-                var tileMat = _property == GravityProperty.GasDensity ? tile.gasMaterial : tile.liquidMaterial;
+                var tileMat = _property == GravityProperty.GasConcentration ? tile.gasMaterial : tile.liquidMaterial;
                 var tileDef = lib.Get(tileMat);
                 if (tileDef == null) continue;
 
                 foreach (var npos in grid.GetNeighborPositions(pos))
                 {
                     ref var neighbor = ref grid.GetTile(npos);
-                    var neighborMat = _property == GravityProperty.GasDensity ? neighbor.gasMaterial : neighbor.liquidMaterial;
+                    var neighborMat = _property == GravityProperty.GasConcentration ? neighbor.gasMaterial : neighbor.liquidMaterial;
 
                     float neighborVal = _snapshotCache.TryGetValue(npos, out float sv) ? sv : GetValue(neighbor);
                     float diff = sourceVal - neighborVal;
                     float absDiff = Mathf.Abs(diff);
                     if (absDiff < 0.5f) continue;
 
-                    // Para líquidos: no transferir si vecino ya está lleno
                     if (_property == GravityProperty.Humidity)
                     {
                         float neighborCapacity = neighbor.LiquidCapacity;
@@ -101,9 +106,9 @@ namespace PhysicsSystem.Diffusion
                     grid.MarkDirty(npos);
                 }
 
-                if (_property == GravityProperty.GasDensity && tile.isAtmosphereOpen)
+                if (_property == GravityProperty.GasConcentration && tile.isAtmosphereOpen)
                 {
-                    float atmDiff = sourceVal - atmDensity;
+                    float atmDiff = sourceVal - atmConcentration;
                     float absAtmDiff = Mathf.Abs(atmDiff);
 
                     if (absAtmDiff > 0.5f)
@@ -112,17 +117,17 @@ namespace PhysicsSystem.Diffusion
                         exchange = Mathf.Clamp(exchange, -10f, 10f);
                         AddValue(ref tile, -exchange);
 
-                        if (sourceVal > config.atmosphereVentThreshold)
+                        if (sourceVal > ventThreshold)
                         {
-                            float excess = sourceVal - atmDensity;
-                            float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * FIXED_DELTA_TIME);
+                            float excess     = sourceVal - atmConcentration;
+                            float ventAmount = Mathf.Min(excess, ventRate * FIXED_DELTA_TIME);
                             AddValue(ref tile, -ventAmount);
                             grid.MarkDirty(pos);
 
-                            if (tile.gasDensity < 1f)
+                            if (tile.gasConcentration < 1f)
                                 tile.gasMaterial = MaterialType.EMPTY;
                         }
-                        else if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
+                        else if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmConcentration + 5f)
                         {
                             tile.gasMaterial = config.atmosphereGas;
                         }
@@ -130,7 +135,7 @@ namespace PhysicsSystem.Diffusion
                 }
             }
 
-            if (_property == GravityProperty.GasDensity)
+            if (_property == GravityProperty.GasConcentration)
             {
                 for (int x = 0; x < grid.Width; x++)
                 {
@@ -138,13 +143,13 @@ namespace PhysicsSystem.Diffusion
                     ref var topTile = ref grid.GetTile(topPos);
                     if (!topTile.isAtmosphereOpen) continue;
 
-                    float density = topTile.gasDensity;
-                    if (density > config.atmosphereVentThreshold)
+                    float concentration = topTile.gasConcentration;
+                    if (concentration > ventThreshold)
                     {
-                        float excess = density - atmDensity;
-                        float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * FIXED_DELTA_TIME);
-                        topTile.gasDensity = Mathf.Max(atmDensity, density - ventAmount);
-                        if (topTile.gasDensity < 1f)
+                        float excess     = concentration - atmConcentration;
+                        float ventAmount = Mathf.Min(excess, ventRate * FIXED_DELTA_TIME);
+                        topTile.gasConcentration = Mathf.Max(atmConcentration, concentration - ventAmount);
+                        if (topTile.gasConcentration < 1f)
                             topTile.gasMaterial = MaterialType.EMPTY;
                         grid.MarkDirty(topPos);
                     }
@@ -161,7 +166,7 @@ namespace PhysicsSystem.Diffusion
 
         private float ComputeBias(ref TileData source, ref TileData neighbor, Vector2Int direction)
         {
-            if (_property == GravityProperty.GasDensity)
+            if (_property == GravityProperty.GasConcentration)
             {
                 if (direction.y < 0) return 0.50f;
                 if (direction.y > 0) return 0.15f;
@@ -174,13 +179,13 @@ namespace PhysicsSystem.Diffusion
 
         private void PropagateMaterial(ref TileData source, ref TileData neighbor)
         {
-            if (_property == GravityProperty.GasDensity)
+            if (_property == GravityProperty.GasConcentration)
             {
                 if (source.gasMaterial != MaterialType.EMPTY && neighbor.gasMaterial == MaterialType.EMPTY)
-                    if (neighbor.gasDensity >= 5f)
+                    if (neighbor.gasConcentration >= 5f)
                         neighbor.gasMaterial = source.gasMaterial;
 
-                if (source.gasDensity < 1f)
+                if (source.gasConcentration < 1f)
                     source.gasMaterial = MaterialType.EMPTY;
             }
             else
@@ -195,14 +200,14 @@ namespace PhysicsSystem.Diffusion
         }
 
         private float GetValue(TileData t) =>
-            _property == GravityProperty.Humidity ? t.liquidVolume : t.gasDensity;
+            _property == GravityProperty.Humidity ? t.liquidVolume : t.gasConcentration;
 
         private void AddValue(ref TileData t, float delta)
         {
             if (_property == GravityProperty.Humidity)
                 t.liquidVolume = Mathf.Clamp(t.liquidVolume + delta, 0f, 100f);
             else
-                t.gasDensity = Mathf.Clamp(t.gasDensity + delta, 0f, 100f);
+                t.gasConcentration = Mathf.Clamp(t.gasConcentration + delta, 0f, 100f);
         }
 
 #if UNITY_DEBUG
@@ -210,7 +215,7 @@ namespace PhysicsSystem.Diffusion
         private void LogTransfer(Vector2Int pos, Vector2Int npos, float amount)
         {
             string propName = _property == GravityProperty.Humidity ? "Humidity" : "Gas";
-            Debug.Log($"[Diffusion] {propName}: {pos} → {npos}: {amount:F2}");
+            Debug.Log($"[Diffusion] {propName}: {pos} �� {npos}: {amount:F2}");
         }
 #endif
     }

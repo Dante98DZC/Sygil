@@ -12,7 +12,7 @@ namespace PhysicsSystem.Rules.Rules
     /// punto de ebullición. R15 Boiling maneja la ebullición completa.
     ///
     /// Condición: hay líquido presente + temperatura > 50 (calor moderado).
-    /// Efecto: reduce liquidVolume gradualmente, aumenta gasDensity y agrega gasMaterial=STEAM
+    /// Efecto: reduce liquidVolume gradualmente, aumenta gasConcentration y agrega gasMaterial=STEAM
     /// si el slot de gas está vacío.
     /// </summary>
     public class R08_SlowEvaporation : IInteractionRule
@@ -50,7 +50,7 @@ namespace PhysicsSystem.Rules.Rules
                 if (tile.liquidVolume <= 0f)
                     tile.liquidMaterial = MaterialType.EMPTY;
 
-                tile.gasDensity = Mathf.Clamp(tile.gasDensity + GasDensityGain, 0f, 100f);
+                tile.gasConcentration = Mathf.Clamp(tile.gasConcentration + GasDensityGain, 0f, 100f);
 
                 if (tile.gasMaterial == MaterialType.EMPTY)
                     tile.gasMaterial = MaterialType.STEAM;

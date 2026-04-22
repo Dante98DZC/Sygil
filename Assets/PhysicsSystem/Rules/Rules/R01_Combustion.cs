@@ -35,9 +35,9 @@ namespace PhysicsSystem.Rules.Rules
             if (def == null) return false;
             if (!def.IsFlammable) return false;
             if (tile.temperature <= def.combustion.ignitionTemperature) return false;
-            if (def.structural.flammabilityCoeff <= 0.5f) return false;
+            if (def.combustion.flammabilityCoeff <= 0.5f) return false;
 
-            _flammability = def.structural.flammabilityCoeff;
+            _flammability = def.combustion.flammabilityCoeff;
             _smokeForm   = def.combustion.smokeMaterial;
             return true;
         }
@@ -62,7 +62,7 @@ namespace PhysicsSystem.Rules.Rules
             if (smoke != MaterialType.EMPTY)
             {
                 tile.gasMaterial  = smoke;
-                tile.gasDensity  = Mathf.Clamp(tile.gasDensity + 5f * f, 0f, 100f);
+                tile.gasConcentration = Mathf.Clamp(tile.gasConcentration + 5f * f, 0f, 100f);
             }
 
             tile.derivedStates |= StateFlags.ON_FIRE;

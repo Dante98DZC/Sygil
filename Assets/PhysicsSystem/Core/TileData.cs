@@ -1,48 +1,11 @@
 // Assets/PhysicsSystem/Core/TileData.cs
+// Tipos de simulación en PhysicsTypes.cs
+
 using PhysicsSystem.States;
 
 namespace PhysicsSystem.Core
 {
-    // ── Estado de materia ─────────────────────────────────────────────────────
-
-    public enum MatterState { Solid, Liquid, Gas }
-
-    // ── Tipos de material ─────────────────────────────────────────────────────
-    // Orden: mantener valores existentes en las primeras 8 posiciones
-    // para que los ScriptableObjects serializados en Unity no se invaliden.
-
-    public enum MaterialType
-    {
-        // ── Existentes (no reordenar) ────────────────────────────────────────
-        EMPTY        = 0,
-        WOOD         = 1,
-        METAL        = 2,
-        STONE        = 3,
-        WATER        = 4,
-        GAS          = 5,   // deprecated — mantener por compatibilidad de assets
-        EARTH        = 6,
-        GLASS        = 7,
-
-        // ── Sólidos nuevos ───────────────────────────────────────────────────
-        ICE          = 8,   // H2O sólido  → funde en WATER
-        ASH          = 9,   // residuo de combustión, no arde ni funde
-        SAND         = 10,  // STONE disgregado → funde en MOLTEN_GLASS
-
-        // ── Líquidos ─────────────────────────────────────────────────────────
-        LAVA         = 11,  // STONE fundido  → solidifica en STONE, hierve en ROCK_GAS
-        MOLTEN_METAL = 12,  // METAL fundido  → solidifica en METAL
-        MOLTEN_GLASS = 13,  // GLASS/SAND fundido → solidifica en GLASS
-        MUD          = 14,  // EARTH + WATER  → seca en EARTH
-
-        // ── Gases ─────────────────────────────────────────────────────────────
-        STEAM        = 15,  // WATER hervida  → condensa en WATER
-        SMOKE        = 16,  // subproducto de combustión, no condensa
-        CO2          = 17,  // gas inerte denso
-        ROCK_GAS     = 18,  // LAVA vaporizada, muy rara
-        AIR         = 19,  // gas atmosférico (no existe en el mundo, solo en atmósfera)
-    }
-
-    // ── TileData v4 ───────────────────────────────────────────────────────────
+    // ── TileData v6 ───────────────────────────────────────────────────────────
 
     public struct TileData
     {
@@ -102,11 +65,11 @@ namespace PhysicsSystem.Core
         public MaterialType gasMaterial;
 
         /// <summary>
-        /// Densidad / masa de gas [0..100]. 50 = 1 atm (baseline).
-        /// La presión diferencial se deriva: gasDensity - SimulationConfig.gasBaseline.
-        /// Reemplaza el campo pressure eliminado en v4.
+        /// Concentración de gas en el tile [0..100%]. 0 = vacío, 100 = saturado.
+        /// La presión es emergente — resultado de fuentes activas, no de baseline inyectada.
+        /// Tiles abiertos al exterior difunden hacia atmosphereConcentration (normalmente 0%).
         /// </summary>
-        public float gasDensity;
+        public float gasConcentration;
 
         // ══════════════════════════════════════════════════════════════════════
         // SHARED — propiedad que atraviesa todas las capas

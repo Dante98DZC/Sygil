@@ -45,7 +45,7 @@ namespace PhysicsSystem.Rules.Rules
                 tile.liquidMaterial = MaterialType.EMPTY;
 
             // clamp_all — propiedades no modificadas por esta regla
-            tile.gasDensity          = Mathf.Clamp(tile.gasDensity,          0f, 100f);
+            tile.gasConcentration   = Mathf.Clamp(tile.gasConcentration,   0f, 100f);
             tile.electricEnergy      = Mathf.Clamp(tile.electricEnergy,      0f, 100f);
             tile.structuralIntegrity = Mathf.Clamp(tile.structuralIntegrity, 0f, 100f);
         }

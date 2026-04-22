@@ -115,7 +115,7 @@ namespace PhysicsSystem.Bridge
     {
         public readonly float Temperature;
         public readonly float ElectricEnergy;
-        public readonly float GasDensity;
+        public readonly float GasConcentration;
         public readonly float StructuralIntegrity;
         public readonly float LiquidVolume;
 
@@ -125,7 +125,7 @@ namespace PhysicsSystem.Bridge
         {
             Temperature         = t;
             ElectricEnergy      = e;
-            GasDensity          = g;
+            GasConcentration   = g;
             StructuralIntegrity = s;
             LiquidVolume        = lv;
         }
@@ -133,7 +133,7 @@ namespace PhysicsSystem.Bridge
         public static TilePropertySnapshot From(in TileData tile) => new(
             tile.temperature,
             tile.electricEnergy,
-            tile.gasDensity,
+            tile.gasConcentration,
             tile.structuralIntegrity,
             tile.liquidVolume
         );
@@ -141,7 +141,7 @@ namespace PhysicsSystem.Bridge
         public bool HasSignificantChange(TilePropertySnapshot other, float tolerance) =>
             Mathf.Abs(Temperature         - other.Temperature)         > tolerance ||
             Mathf.Abs(ElectricEnergy      - other.ElectricEnergy)      > tolerance ||
-            Mathf.Abs(GasDensity          - other.GasDensity)          > tolerance ||
+            Mathf.Abs(GasConcentration   - other.GasConcentration)   > tolerance ||
             Mathf.Abs(StructuralIntegrity - other.StructuralIntegrity) > tolerance ||
             Mathf.Abs(LiquidVolume        - other.LiquidVolume)        > tolerance;
 
@@ -154,7 +154,7 @@ namespace PhysicsSystem.Bridge
             Mathf.Max(
                 Temperature    / 100f,
                 ElectricEnergy / 100f,
-                GasDensity     / 100f,
+                GasConcentration / 100f,
                 LiquidVolume   / 1000f
             );
     }

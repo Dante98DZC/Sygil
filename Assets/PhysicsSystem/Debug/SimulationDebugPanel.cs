@@ -293,7 +293,7 @@ namespace PhysicsSystem.DebugTools
                     }
 
                     // Gas layer: conditional
-                    if (tile.gasMaterial != MaterialType.EMPTY || tile.gasDensity > 0f)
+                    if (tile.gasMaterial != MaterialType.EMPTY || tile.gasConcentration > 0f)
                     {
                         h += 18f;   // layer header
                         h += 18f;   // mat + density
@@ -479,11 +479,11 @@ namespace PhysicsSystem.DebugTools
             // ═══════════════════════════════════════════════════════
             // GAS LAYER
             // ═══════════════════════════════════════════════════════════════
-            if (tile.gasMaterial != MaterialType.EMPTY || tile.gasDensity > 0f)
+            if (tile.gasMaterial != MaterialType.EMPTY || tile.gasConcentration > 0f)
             {
                 DrawLayerHeader(x, ref y, "GAS", tile.gasMaterial, GetMaterialColor(tile.gasMaterial));
                 DrawInlineProperty(x,       y, "Mat:", tile.gasMaterial.ToString(), GetMaterialColor(tile.gasMaterial));
-                DrawInlineProperty(x + 80f, y, "Dens:", tile.gasDensity.ToString("F1"), _textPrimary);
+                DrawInlineProperty(x + 80f, y, "Dens:", tile.gasConcentration.ToString("F1"), _textPrimary);
                 y += 18f;
             }
 

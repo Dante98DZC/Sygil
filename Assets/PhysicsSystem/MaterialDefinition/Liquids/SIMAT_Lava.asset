@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99c89ba65cfa79c49a575146686c1a5d, type: 3}
+  m_Name: SIMAT_Lava
+  m_EditorClassIdentifier: 
+  materialType: 11
+  layer: 1
+  heatTransferCoeff: 1
+  visionObstructionCoeff: 0
+  coolingTransition:
+    resultMaterial: 3
+    triggerTemperature: 800
+    latentHeat: 0
+  heatingTransition:
+    resultMaterial: 15
+    triggerTemperature: 5000
+    latentHeat: 0
+  combustion:
+    isFlammable: 1
+    flammabilityCoeff: 1
+    ignitionTemperature: 800
+    heatOutput: 1000
+    burnRate: 0.1
+    smokeMaterial: 0
+    subproducts:
+    - material: 20
+      massRatio: 0.2
+    - material: 16
+      massRatio: 0.5
+  structural:
+    integrityBase: 0
+    canCollapse: 0
+    collapseInto: 0
+    electricTransferCoeff: 0
+    gasPermeability: 0
+    isPorous: 0
+    soilSaturationCapacity: 0
+    soilAbsorptionRate: 0
+  fluid:
+    viscosity: 0.9
+    movementCostMultiplier: 8
+  atmospheric:
+    dispersionRate: 0
+    gasDensityRelative: 0
+    isFlammableGas: 0
