@@ -65,6 +65,7 @@
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R03_ElectricPropagation.cs" />
     <Compile Include="Assets\PhysicsSystem\Debug\SimulationDebugPanel.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\IInteractionRule.cs" />
+    <Compile Include="Assets\PhysicsSystem\Core\PhaseTransition.cs" />
     <Compile Include="Assets\PhysicsSystem\Core\MaterialLayer.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\ISimulationModifier.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R08_SlowEvaporation.cs" />
@@ -77,8 +78,10 @@
     <Compile Include="Assets\PhysicsSystem\Config\SimulationConfig.cs" />
     <Compile Include="Assets\PhysicsSystem\States\StateFlags.cs" />
     <Compile Include="Assets\PhysicsSystem\Diffusion\DiffusionStrategy.cs" />
+    <Compile Include="Assets\PhysicsSystem\Core\MaterialPresets.cs" />
     <Compile Include="Assets\PhysicsSystem\Player\PlayerActionChannel.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R02_Evaporation.cs" />
+    <Compile Include="Assets\PhysicsSystem\Core\MaterialSubData.cs" />
     <Compile Include="Assets\PhysicsSystem\Renderer\Overlay\OverlayMode.cs" />
     <Compile Include="Assets\PhysicsSystem\Tests\TestWorldGenerator.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R_PhaseTransitions.cs" />
@@ -101,6 +104,31 @@
     <Compile Include="Assets\PhysicsSystem\Rules\Rules\R_Filtration.cs" />
     <Compile Include="Assets\PhysicsSystem\Rules\RuleRegistry.cs" />
     <Compile Include="Assets\PhysicsSystem\Powers\PowerChannel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
+    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
