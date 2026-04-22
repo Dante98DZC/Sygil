@@ -21,11 +21,11 @@ namespace PhysicsSystem.Diffusion
             if (grid.ActiveTiles.Count == 0) return;
 
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
-            int maxTiles = 500;
+            const float FIXED_DELTA_TIME = 0.016f;
+            int maxTiles = config.maxDiffusionTilesPerTick;
+
             if (activeTiles.Count > maxTiles)
-            {
                 activeTiles.RemoveRange(maxTiles, activeTiles.Count - maxTiles);
-            }
 
             float atmDensity = config.atmosphereDensity;
             float atmDiffusionRate = config.atmosphereDiffusionRate;

@@ -27,7 +27,7 @@ MonoBehaviour:
   liquidForm: 0
   boilingPoint: 0
   gasForm: 0
-  condensationPoint: 1500
+  condensationPoint: 100
   condensedForm: 11
   freezingPoint: 0
   solidForm: 0
@@ -35,6 +35,13 @@ MonoBehaviour:
   burnInto: 0
   smokeForm: 16
   collapseInto: 0
+  latentHeatOfFusion: 0
+  latentHeatOfVaporization: 0
+  soilAbsorptionRate: 0
+  soilSaturationCapacity: 0
+  isPorous: 0
+  dissipationMultiplier: 1
+  viscosity: 1
   hasMeltingPoint: 0
   meltingTemperature: 100
   meltInto: 0

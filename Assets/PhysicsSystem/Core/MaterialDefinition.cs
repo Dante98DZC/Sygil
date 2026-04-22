@@ -3,219 +3,240 @@ using UnityEngine;
 
 namespace PhysicsSystem.Core
 {
+    /// <summary>
+    /// Define el comportamiento físico completo de un material en la simulación.
+    ///
+    /// ORGANIZACIÓN POR CAPA:
+    ///   - El campo <see cref="layer"/> declara en qué capa vive este material.
+    ///   - Las secciones de Inspector "Ground", "Liquid" y "Gas" contienen propiedades
+    ///     específicas de cada capa. Solo configura la sección de tu capa.
+    ///   - Las secciones "Transitions" y "Combustion" son transversales y aplican
+    ///     a cualquier capa cuando corresponda.
+    ///
+    /// TRANSICIONES DE FASE:
+    ///   - <see cref="heatingTransition"/>: lo que este material se convierte si supera
+    ///     triggerTemperature (fusión, ebullición).
+    ///   - <see cref="coolingTransition"/>: lo que se convierte si baja de triggerTemperature
+    ///     (solidificación, condensación).
+    ///   - Ambas usan <see cref="PhaseTransition"/>, struct simétrico con latentHeat incluido.
+    ///
+    /// EJEMPLOS RÁPIDOS:
+    ///   ICE   → layer=Ground, heating=(30°→WATER, latent=+5), cooling=None
+    ///   WATER → layer=Liquid, heating=(80°→STEAM, latent=+8), cooling=(30°→ICE, latent=-5)
+    ///   STEAM → layer=Gas,    heating=None,                   cooling=(80°→WATER, latent=-8)
+    /// </summary>
     [CreateAssetMenu(menuName = "PhysicsSystem/MaterialDefinition")]
     public class MaterialDefinition : ScriptableObject
     {
         // ── Identidad ─────────────────────────────────────────────────────────
 
-        [Header("Identidad")]
+        [Header("Identity")]
+        [Tooltip("Tipo de material que define este asset.")]
         public MaterialType materialType;
-        public MatterState  matterState;
 
-        // ── Física ────────────────────────────────────────────────────────────
+        [Tooltip(
+            "Capa de simulación a la que pertenece: Ground (sólidos), Liquid, Gas. " +
+            "Determina qué campo de TileData usa este material.")]
+        public MaterialLayer layer;
 
-        [Header("Física")]
-        [Range(0, 1)]   public float heatTransferCoeff;
-        [Range(0, 1)]   public float electricTransferCoeff;
-        [Range(0, 1)]   public float gasPermeabilityCoeff;
-        [Range(0, 1)]   public float flammabilityCoeff;
-        [Range(0, 100)] public float integrityBase;
+        // ── Física común ──────────────────────────────────────────────────────
 
-        // ── Interacción ───────────────────────────────────────────────────────
+        [Header("Physics — Common")]
+        [Tooltip("Velocidad de transferencia de calor con tiles adyacentes. 0 = aislante, 1 = conductor.")]
+        [Range(0f, 1f)]
+        public float heatTransferCoeff;
 
-        [Header("Interacción")]
-        public bool           blocksMovement;
-        public bool           blocksVision;
-        public bool           slowsMovement;
-        [Range(0, 10)] public float movementCost = 1f;
+        // ── Interacción con el jugador ─────────────────────────────────────────
 
-        // ── Transiciones de estado: calentamiento ─────────────────────────────
-        // Sólido → Líquido → Gas
+        [Header("Interaction")]
+        [Tooltip("Si true, las entidades no pueden atravesar este tile.")]
+        public bool blocksMovement;
 
-        [Header("Calentamiento")]
+        [Tooltip("Si true, la visión no atraviesa este tile (oscurece FOV).")]
+        public bool blocksVision;
 
-        /// <summary>
-        /// Temperatura a la que este sólido se funde en liquidForm.
-        /// 0 = no se funde (WOOD, ASH, EARTH).
-        /// </summary>
-        [Range(0, 100)] public float        meltingPoint  = 0f;
+        [Tooltip("Si true, las entidades se mueven más despacio en este tile.")]
+        public bool slowsMovement;
 
-        /// <summary>
-        /// Material líquido resultante de la fusión.
-        /// Solo relevante si meltingPoint mayor que 0.
-        /// </summary>
-        public MaterialType liquidForm = MaterialType.EMPTY;
+        [Tooltip("Coste de movimiento relativo. 1 = normal, >1 = más lento.")]
+        [Range(1f, 10f)]
+        public float movementCost = 1f;
 
-        /// <summary>
-        /// Temperatura a la que este líquido hierve en gasForm.
-        /// 0 = no hierve (LAVA, MUD).
-        /// </summary>
-        [Range(0, 100)] public float        boilingPoint  = 0f;
+        // ── Transiciones de fase ──────────────────────────────────────────────
 
-        /// <summary>
-        /// Material gaseoso resultante de la ebullición.
-        /// Solo relevante si boilingPoint mayor que 0.
-        /// </summary>
-        public MaterialType gasForm    = MaterialType.EMPTY;
+        [Header("Phase Transitions")]
+        [Tooltip(
+            "Qué ocurre cuando este material supera heatingTransition.triggerTemperature. " +
+            "Ejemplos: STONE(s)→LAVA(l) | WATER(l)→STEAM(g). Dejar en None si no aplica.")]
+        public PhaseTransition heatingTransition;
 
-        // ── Transiciones de estado: enfriamiento ──────────────────────────────
-        // Gas → Líquido → Sólido
-
-        [Header("Enfriamiento")]
-
-        /// <summary>
-        /// Temperatura a la que este gas condensa en condensedForm.
-        /// Normalmente igual al boilingPoint del líquido correspondiente.
-        /// 0 = no condensa (SMOKE, CO2).
-        /// </summary>
-        [Range(0, 100)] public float        condensationPoint = 0f;
-
-        /// <summary>
-        /// Material líquido resultante de la condensación.
-        /// </summary>
-        public MaterialType condensedForm = MaterialType.EMPTY;
-
-        /// <summary>
-        /// Temperatura a la que este líquido solidifica en solidForm.
-        /// Normalmente igual al meltingPoint del sólido correspondiente.
-        /// 0 = no solidifica (MUD, LAVA — solidifica via regla especial).
-        /// </summary>
-        [Range(0, 100)] public float        freezingPoint  = 0f;
-
-        /// <summary>
-        /// Material sólido resultante de la solidificación.
-        /// </summary>
-        public MaterialType solidForm   = MaterialType.EMPTY;
+        [Tooltip(
+            "Qué ocurre cuando este material baja de coolingTransition.triggerTemperature. " +
+            "Ejemplos: STEAM(g)→WATER(l) | WATER(l)→ICE(s). Dejar en None si no aplica.")]
+        public PhaseTransition coolingTransition;
 
         // ── Combustión ────────────────────────────────────────────────────────
 
-        [Header("Combustión")]
+        [Header("Combustion")]
+        [Tooltip(
+            "Comportamiento de combustión. Si combustion.ignitionTemperature = 0, " +
+            "este material no arde. Aplica a sólidos (WOOD) y gases inflamables (ROCK_GAS).")]
+        public CombustionData combustion;
 
-        /// <summary>
-        /// Temperatura mínima para que R01 arda este material.
-        /// 0 = no arde (STONE, METAL, WATER, ICE…).
-        /// </summary>
-        [Range(0, 100)] public float        ignitionTemperature = 0f;
+        // ── Ground: propiedades de sólidos ────────────────────────────────────
 
-        /// <summary>
-        /// Material sólido que queda en groundMaterial tras la combustión completa.
-        /// WOOD → ASH, resto → EMPTY.
-        /// </summary>
-        public MaterialType burnInto    = MaterialType.EMPTY;
+        [Header("Ground Layer — Structural (solo para layer = Ground)")]
+        [Tooltip("Propiedades estructurales: integridad base, colapso, conductividad eléctrica.")]
+        public StructuralData structural;
 
-        /// <summary>
-        /// Gas producido durante la combustión que va a gasMaterial.
-        /// WOOD → SMOKE, GAS material → CO2.
-        /// </summary>
-        public MaterialType smokeForm   = MaterialType.SMOKE;
+        // ── Liquid: propiedades de fluidos ────────────────────────────────────
 
-        // ── Colapso estructural ───────────────────────────────────────────────
+        [Header("Liquid Layer — Fluid (solo para layer = Liquid)")]
+        [Tooltip("Propiedades de fluido: viscosidad, absorción por suelo poroso.")]
+        public FluidData fluid;
 
-        [Header("Colapso estructural")]
+        // ── Gas: propiedades atmosféricas ─────────────────────────────────────
 
-        /// <summary>
-        /// Material resultante cuando R07 colapsa por integridad baja.
-        /// Compatibilidad con v2 — en materiales nuevos usar burnInto o solidForm.
-        /// </summary>
-        public MaterialType collapseInto = MaterialType.EMPTY;
+        [Header("Gas Layer — Atmospheric (solo para layer = Gas)")]
+        [Tooltip("Propiedades atmosféricas: disipación, permeabilidad, inflamabilidad.")]
+        public AtmosphericData atmospheric;
 
-        // ── Calor Latente ─────────────────────────────────────────────────────
-        // Energía absorbida/liberada durante transiciones de fase.
-        // El mismo valor aplica en ambas direcciones (fusión/solidificación, ebullición/condensación).
+        // ── Propiedades derivadas (no serializar) ─────────────────────────────
 
-        [Header("Calor Latente")]
-
-        /// <summary>
-        /// Energía absorbida durante fusión (sólido → líquido) en unidades de temperatura.
-        /// Mismo valor se libera durante solidificación (líquido → sólido).
-        /// </summary>
-        public float latentHeatOfFusion = 0f;
-
-        /// <summary>
-        /// Energía absorbida durante ebullición (líquido → gas) en unidades de temperatura.
-        /// Mismo valor se libera durante condensación (gas → líquido).
-        /// </summary>
-        public float latentHeatOfVaporization = 0f;
-
-        // ── Filtración ─────────────────────────────────────────────────────
-
-        [Header("Filtración")]
-
-        /// <summary>
-        /// Velocidad de absorción de líquido por tick (litros/tick).
-        /// Solo activo si isPorous = true.
-        /// </summary>
-        [Range(0f, 10f)] public float soilAbsorptionRate = 0f;
-
-        /// <summary>
-        /// Volumen máximo de líquido que este material puede retener.
-        /// </summary>
-        [Range(0f, 500f)] public float soilSaturationCapacity = 0f;
-
-        /// <summary>
-        /// Si true, este material absorbe líquidos de la capa superior.
-        /// </summary>
-        public bool isPorous = false;
-
-        // ── Disipación ─────────────────────────────────────────────────────
-
-        [Header("Disipación")]
-
-        /// <summary>
-        /// Multiplicador de velocidad de disipación en atmósfera abierta.
-        /// 1.0 = base, >1 = más rápido, <1 = más lento. Mínimo 0 para gases
-        /// que no disipen (ej. bolsa de CO2 confinada).
-        /// </summary>
-        [Range(0f, 5f)] public float dissipationMultiplier = 1f;
-
-        // ── Viscosidad ─────────────────────────────────────────────────────
-
-        [Header("Viscosidad")]
-
-        /// <summary>
-        /// Coeficiente de flujo para líquidos. 1.0 = agua (base), valores menores
-        /// = más viscoso. No aplica a sólidos ni gases.
-        /// </summary>
-        [Range(0.01f, 1f)] public float viscosity = 1f;
-
-        // ── Campos v2 obsoletos ───────────────────────────────────────────────
-        // Mantenidos para que los ScriptableObjects existentes no pierdan datos.
-        // No usar en código nuevo — usar meltingPoint / liquidForm en su lugar.
-
-        [Header("Obsoleto — no usar en código nuevo")]
-        [System.Obsolete("Usar meltingPoint > 0 en su lugar")]
-        public bool         hasMeltingPoint     = false;
-        [System.Obsolete("Usar meltingPoint en su lugar")]
-        [Range(0, 100)] public float meltingTemperature = 100f;
-        [System.Obsolete("Usar liquidForm en su lugar")]
-        public MaterialType meltInto = MaterialType.EMPTY;
-
-        // ── Helper estático ───────────────────────────────────────────────────
-
-        /// <summary>
-        /// Estado de materia por defecto de cada MaterialType.
-        /// Usado por TileData.material setter para compatibilidad con reglas antiguas.
-        /// </summary>
-        public static MatterState GetDefaultState(MaterialType type)
+        /// <summary>Estado de materia derivado de la capa. No usar como campo serializado.</summary>
+        public MatterState MatterState => layer switch
         {
-            switch (type)
+            MaterialLayer.Ground => MatterState.Solid,
+            MaterialLayer.Liquid => MatterState.Liquid,
+            MaterialLayer.Gas    => MatterState.Gas,
+            _                    => MatterState.Solid
+        };
+
+        /// <summary>True si este material puede iniciar combustión.</summary>
+        public bool IsFlammable => combustion.CanIgnite;
+
+        /// <summary>True si este gas puede arder como gas (R10).</summary>
+        public bool IsFlammableGas => layer == MaterialLayer.Gas && atmospheric.isFlammable;
+
+        /// <summary>True si tiene una transición de calentamiento configurada.</summary>
+        public bool HasHeatingTransition => heatingTransition.IsEnabled;
+
+        /// <summary>True si tiene una transición de enfriamiento configurada.</summary>
+        public bool HasCoolingTransition => coolingTransition.IsEnabled;
+
+        /// <summary>True si este material bloquea el movimiento de gases (no poroso).</summary>
+        public bool BlocksGas => GasPermeability < 0.01f;
+
+        // ── Helpers de acceso unificado ───────────────────────────────────────
+
+        /// <summary>
+        /// Devuelve la permeabilidad efectiva al gas, teniendo en cuenta la capa.
+        /// Los sólidos no porosos tienen permeabilidad 0; gases y líquidos usan atmospheric.
+        /// </summary>
+        public float GasPermeability => layer switch
+        {
+            MaterialLayer.Gas    => atmospheric.gasPermeabilityCoeff,
+            MaterialLayer.Liquid => 0f,   // los líquidos bloquean gases por defecto
+            MaterialLayer.Ground => 0f,   // los sólidos bloquean gases salvo regla especial
+            _                    => 0f
+        };
+
+        // ── Compatibilidad hacia atrás ────────────────────────────────────────
+
+        /// <summary>
+        /// Estado de materia por defecto basado en el tipo.
+        /// Usado por código legacy que no accede a la instancia de MaterialDefinition.
+        /// Para código nuevo, usar <see cref="MatterState"/> en la instancia.
+        /// </summary>
+        public static MatterState GetDefaultState(MaterialType type) => type switch
+        {
+            MaterialType.WATER        => MatterState.Liquid,
+            MaterialType.LAVA         => MatterState.Liquid,
+            MaterialType.MOLTEN_METAL => MatterState.Liquid,
+            MaterialType.MOLTEN_GLASS => MatterState.Liquid,
+            MaterialType.MUD          => MatterState.Liquid,
+            MaterialType.STEAM        => MatterState.Gas,
+            MaterialType.SMOKE        => MatterState.Gas,
+            MaterialType.CO2          => MatterState.Gas,
+            MaterialType.ROCK_GAS     => MatterState.Gas,
+            MaterialType.AIR          => MatterState.Gas,
+            _                         => MatterState.Solid
+        };
+
+        // ── Validación en Editor ──────────────────────────────────────────────
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            ValidateLayer();
+            ValidateTransitions();
+            ValidateCombustion();
+        }
+
+        private void ValidateLayer()
+        {
+            // Detecta mismatches obvios entre layer y materialType
+            var expectedLayer = MaterialTypeToLayer(materialType);
+            if (expectedLayer.HasValue && expectedLayer.Value != layer)
             {
-                case MaterialType.WATER:
-                case MaterialType.LAVA:
-                case MaterialType.MOLTEN_METAL:
-                case MaterialType.MOLTEN_GLASS:
-                case MaterialType.MUD:
-                    return MatterState.Liquid;
-
-                case MaterialType.STEAM:
-                case MaterialType.SMOKE:
-                case MaterialType.CO2:
-                case MaterialType.ROCK_GAS:
-                    return MatterState.Gas;
-
-                default:
-                    return MatterState.Solid;
+                Debug.LogWarning(
+                    $"[MaterialDefinition] '{name}': materialType={materialType} " +
+                    $"sugiere layer={expectedLayer.Value}, pero layer={layer}. " +
+                    "Verifica la configuración del asset.", this);
             }
         }
+
+        private void ValidateTransitions()
+        {
+            if (heatingTransition.IsEnabled)
+            {
+                var expectedTargetLayer = MaterialTypeToLayer(heatingTransition.resultMaterial);
+                // Calentamiento: Ground→Liquid, Liquid→Gas (o Ground→Gas directo como sublimación)
+                if (layer == MaterialLayer.Gas)
+                {
+                    Debug.LogWarning(
+                        $"[MaterialDefinition] '{name}': un Gas no debería tener heatingTransition " +
+                        "(los gases no se 'calientan' a otra fase en esta simulación).", this);
+                }
+            }
+
+            if (coolingTransition.IsEnabled)
+            {
+                if (layer == MaterialLayer.Ground)
+                {
+                    Debug.LogWarning(
+                        $"[MaterialDefinition] '{name}': un sólido Ground no debería tener coolingTransition " +
+                        "(ya es el estado más frío). ¿Querías heatingTransition?", this);
+                }
+            }
+        }
+
+        private void ValidateCombustion()
+        {
+            if (combustion.CanIgnite && layer == MaterialLayer.Gas && !atmospheric.isFlammable)
+            {
+                Debug.LogWarning(
+                    $"[MaterialDefinition] '{name}': tiene ignitionTemperature > 0 " +
+                    "pero atmospheric.isFlammable = false. Para gases inflamables activa isFlammable.", this);
+            }
+        }
+
+        /// <summary>Inferencia de capa esperada por tipo de material para validación.</summary>
+        private static MaterialLayer? MaterialTypeToLayer(MaterialType type) => type switch
+        {
+            MaterialType.WATER        => MaterialLayer.Liquid,
+            MaterialType.LAVA         => MaterialLayer.Liquid,
+            MaterialType.MOLTEN_METAL => MaterialLayer.Liquid,
+            MaterialType.MOLTEN_GLASS => MaterialLayer.Liquid,
+            MaterialType.MUD          => MaterialLayer.Liquid,
+            MaterialType.STEAM        => MaterialLayer.Gas,
+            MaterialType.SMOKE        => MaterialLayer.Gas,
+            MaterialType.CO2          => MaterialLayer.Gas,
+            MaterialType.ROCK_GAS     => MaterialLayer.Gas,
+            MaterialType.AIR          => MaterialLayer.Gas,
+            MaterialType.EMPTY        => null,              // EMPTY no tiene capa
+            _                         => MaterialLayer.Ground
+        };
+#endif
     }
 }

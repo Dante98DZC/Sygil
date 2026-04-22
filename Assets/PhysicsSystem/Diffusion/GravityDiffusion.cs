@@ -33,18 +33,17 @@ namespace PhysicsSystem.Diffusion
             if (grid.ActiveTiles.Count == 0) return;
 
             var activeTiles = new List<Vector2Int>(grid.ActiveTiles);
-            int maxTiles = 500;
-            if (activeTiles.Count > maxTiles)
-            {
-                activeTiles.RemoveRange(maxTiles, activeTiles.Count - maxTiles);
-            }
-
             float atmDensity = config.atmosphereDensity;
             float atmDiffusionRate = config.atmosphereDiffusionRate;
+            const float FIXED_DELTA_TIME = 0.016f;
+            int maxTiles = config.maxDiffusionTilesPerTick;
 
             _snapshotCache.Clear();
             foreach (var pos in activeTiles)
                 _snapshotCache[pos] = GetValue(grid.GetTile(pos));
+
+            if (activeTiles.Count > maxTiles)
+                activeTiles.RemoveRange(maxTiles, activeTiles.Count - maxTiles);
 
             foreach (var pos in activeTiles)
             {
@@ -116,7 +115,7 @@ namespace PhysicsSystem.Diffusion
                         if (sourceVal > config.atmosphereVentThreshold)
                         {
                             float excess = sourceVal - atmDensity;
-                            float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * Time.deltaTime);
+                            float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * FIXED_DELTA_TIME);
                             AddValue(ref tile, -ventAmount);
                             grid.MarkDirty(pos);
 
@@ -143,7 +142,7 @@ namespace PhysicsSystem.Diffusion
                     if (density > config.atmosphereVentThreshold)
                     {
                         float excess = density - atmDensity;
-                        float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * Time.deltaTime);
+                        float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * FIXED_DELTA_TIME);
                         topTile.gasDensity = Mathf.Max(atmDensity, density - ventAmount);
                         if (topTile.gasDensity < 1f)
                             topTile.gasMaterial = MaterialType.EMPTY;

@@ -158,14 +158,20 @@ namespace PhysicsSystem.Rules.Rules
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
-            if (tile.gasMaterial == MaterialType.EMPTY)
-            {
-                tile.gasMaterial    = _gasForm;
-                tile.liquidMaterial = MaterialType.EMPTY;
-                tile.liquidVolume   = 0f;
-            }
+            float evaporationRate = Mathf.Clamp01(
+                (tile.temperature - def.boilingPoint) / 20f) * 50f + 10f;
 
-            tile.gasDensity  = Mathf.Clamp(tile.gasDensity + GasDensityGain, 0f, 100f);
+            float volumeToEvaporate = Mathf.Min(tile.liquidVolume, evaporationRate);
+
+            if (tile.gasMaterial == MaterialType.EMPTY)
+                tile.gasMaterial = _gasForm;
+
+            tile.liquidVolume = Mathf.Clamp(tile.liquidVolume - volumeToEvaporate, 0f, tile.LiquidCapacity);
+            if (tile.liquidVolume <= 0f)
+                tile.liquidMaterial = MaterialType.EMPTY;
+
+            float gasProduced = volumeToEvaporate * (GasDensityGain / 50f);
+            tile.gasDensity = Mathf.Clamp(tile.gasDensity + gasProduced, 0f, 100f);
             tile.temperature = Mathf.Clamp(tile.temperature - _latentHeat, _minTemperature, _maxTemperature);
 
             for (int i = 0; i < neighbors.Length; i++)

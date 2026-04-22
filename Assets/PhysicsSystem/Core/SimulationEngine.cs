@@ -158,6 +158,11 @@ namespace PhysicsSystem.Core
                 _decaySystem.ClearElectricSources();
             }
 
+            if (tickType == TickType.INTEGRITY)
+            {
+                Grid.RebuildAtmosphereFlags();
+            }
+
             Grid.ClearDirtyFlags();
         }
 
