@@ -183,37 +183,5 @@ namespace PhysicsSystem.Core
 
         public static TileData Create(MaterialType ground, float temperature = 20f, float integrity = 100f)
             => new TileData { groundMaterial = ground, temperature = temperature, structuralIntegrity = integrity };
-
-        // ── Compatibilidad v3 ─────────────────────────────────────────────────
-        // Mantenida temporalmente para que las reglas legacy (R01–R12) compilen
-        // sin cambios. Marcar usos como obsoletos y migrar regla por regla.
-
-        /// <summary>
-        /// Propiedad calculada de compatibilidad con v3.
-        /// GET: liquidMaterial > groundMaterial > gasMaterial > EMPTY.
-        /// SET: asigna al slot correcto según MatterState.
-        /// OBSOLETO — usar groundMaterial / liquidMaterial / gasMaterial directamente.
-        /// </summary>
-        [System.Obsolete("v3 compat — usar groundMaterial / liquidMaterial / gasMaterial")]
-        public MaterialType material
-        {
-            get
-            {
-                if (liquidMaterial  != MaterialType.EMPTY) return liquidMaterial;
-                if (groundMaterial  != MaterialType.EMPTY) return groundMaterial;
-                if (gasMaterial     != MaterialType.EMPTY) return gasMaterial;
-                return MaterialType.EMPTY;
-            }
-            set
-            {
-                var state = MaterialDefinition.GetDefaultState(value);
-                switch (state)
-                {
-                    case MatterState.Liquid: liquidMaterial  = value; break;
-                    case MatterState.Gas:    gasMaterial     = value; break;
-                    default:                 groundMaterial  = value; break;
-                }
-            }
-        }
     }
 }

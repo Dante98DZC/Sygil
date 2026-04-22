@@ -18,11 +18,18 @@ namespace PhysicsSystem.States
             foreach (var pos in grid.ActiveTiles)
             {
                 ref var tile = ref grid.GetTile(pos);
-                var def = _lib.Get(tile.material);
+
+                MaterialDefinition def = null;
+                if (tile.groundMaterial != MaterialType.EMPTY)
+                    def = _lib.Get(tile.groundMaterial);
+                else if (tile.liquidMaterial != MaterialType.EMPTY)
+                    def = _lib.Get(tile.liquidMaterial);
+                else if (tile.gasMaterial != MaterialType.EMPTY)
+                    def = _lib.Get(tile.gasMaterial);
 
                 StateFlags flags = StateFlags.NONE;
 
-                if (tile.temperature > 70f && def != null && def.flammabilityCoeff > 0.5f)
+                if (tile.temperature > 70f && def != null && def.structural.flammabilityCoeff > 0.5f)
                     flags |= StateFlags.ON_FIRE;
 
                 if (tile.electricEnergy > 50f)
@@ -31,7 +38,7 @@ namespace PhysicsSystem.States
                 if (tile.gasDensity > 60f)
                     flags |= StateFlags.PRESSURIZED;
 
-                if (tile.liquidVolume > 70f && tile.material != MaterialType.WATER)
+                if (tile.liquidVolume > 70f && tile.liquidMaterial != MaterialType.WATER)
                     flags |= StateFlags.FLOODED;
 
                 if (tile.structuralIntegrity < 30f)
@@ -40,7 +47,10 @@ namespace PhysicsSystem.States
                 if (tile.gasDensity > 60f && tile.temperature > 40f)
                     flags |= StateFlags.VOLATILE;
 
-                if (tile.material == MaterialType.EMPTY && !tile.wasEmpty)
+                bool allEmpty = tile.groundMaterial == MaterialType.EMPTY &&
+                              tile.liquidMaterial == MaterialType.EMPTY &&
+                              tile.gasMaterial == MaterialType.EMPTY;
+                if (allEmpty && !tile.wasEmpty)
                     flags |= StateFlags.COLLAPSED;
 
                 tile.derivedStates = flags;

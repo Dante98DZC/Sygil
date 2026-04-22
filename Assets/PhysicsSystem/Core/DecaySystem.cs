@@ -7,17 +7,11 @@ using PhysicsSystem.States;
 namespace PhysicsSystem.Core
 {
     /// <summary>
-    /// Aplica decay por propiedad cada SLOW tick, después de diffusion (I8).
-    /// Es el único árbitro de si un tile es estable — PhysicsGrid.TryDeactivateTile
-    /// no tiene condiciones propias.
+    /// Aplica decay por propiedad cada SLOW tick, después de diffusion.
+    /// Es el único árbitro de si un tile es estable.
     ///
-    /// gasDensity decae hacia gasBaseline (50 = 1 atm) en ambas direcciones:
-    ///   > 50 → baja hacia 50 (gas se dispersa)
-    ///   < 50 → sube hacia 50 (vacío se rellena de atmósfera)
+    /// gasDensity decae hacia atmosphereDensity en ambas direcciones.
     /// Modela entropía: los gradientes tienden al equilibrio.
-    ///
-    /// v4: pressure y humidity eliminados. Solo decaen: temperature, gasDensity,
-    /// electricEnergy, structuralIntegrity (indirecto via R07).
     /// </summary>
     public class DecaySystem
     {
@@ -117,7 +111,7 @@ namespace PhysicsSystem.Core
             if (tile.liquidVolume > t) return false;
 
             // structuralIntegrity: inestable solo si está POR DEBAJO del baseline.
-            float integrityBaseline = def != null ? def.integrityBase : 0f;
+            float integrityBaseline = def != null ? def.structural.integrityBase : 0f;
             if (tile.structuralIntegrity < integrityBaseline - t) return false;
 
             // Tile vacío que antes no lo era → una transición pendiente de procesar

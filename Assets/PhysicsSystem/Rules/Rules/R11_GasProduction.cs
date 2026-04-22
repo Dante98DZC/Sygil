@@ -13,10 +13,7 @@ namespace PhysicsSystem.Rules.Rules
     ///   - Material GAS en groundMaterial: emisión continua desde la fuente
     ///
     /// El gas producido empuja gasDensity por encima del baseline (50),
-    /// lo que convierte en presión diferencial positiva (gasDensity > 50).
-    ///
-    /// v4: usa tile.groundMaterial en lugar de tile.material (propiedad calculada
-    /// marcada obsoleta). GAS deprecated sigue en groundMaterial por compatibilidad.
+    /// lo que causa presión diferencial positiva.
     /// </summary>
     public class R11_GasProduction : IInteractionRule
     {

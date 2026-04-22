@@ -8,7 +8,7 @@ namespace PhysicsSystem.Rules.Rules
 
     /// <summary>
     /// Un sólido en groundMaterial se funde cuando su temperatura supera
-    /// meltingPoint. El líquido resultante pasa a liquidMaterial con un
+    /// heatingTransition.triggerTemperature. El líquido resultante pasa a liquidMaterial con un
     /// volumen inicial proporcional a la capacidad del tile.
     /// El suelo queda EMPTY (la materia se convirtió en líquido).
     /// </summary>
@@ -24,7 +24,7 @@ namespace PhysicsSystem.Rules.Rules
         private readonly float _minTemperature;
         private readonly float _maxTemperature;
 
-        private MaterialType _liquidForm;
+        private MaterialType _resultMaterial;
         private float        _latentHeat;
 
         public R13_Melting(float minTemp, float maxTemp)
@@ -37,21 +37,21 @@ namespace PhysicsSystem.Rules.Rules
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
-            if (def == null || def.meltingPoint <= 0f)      return false;
-            if (def.matterState != MatterState.Solid)       return false;
-            if (tile.groundMaterial == MaterialType.EMPTY)  return false;
-            if (tile.temperature < def.meltingPoint)        return false;
-            if (def.liquidForm == MaterialType.EMPTY)       return false;
-            if (tile.LiquidCapacity <= 0f)                  return false;
+            if (def == null) return false;
+            if (!def.HasHeatingTransition) return false;
+            if (def.MatterState != MatterState.Solid) return false;
+            if (tile.groundMaterial == MaterialType.EMPTY) return false;
+            if (tile.temperature < def.heatingTransition.triggerTemperature) return false;
+            if (tile.LiquidCapacity <= 0f) return false;
 
-            _liquidForm = def.liquidForm;
-            _latentHeat = def.latentHeatOfFusion;
+            _resultMaterial = def.heatingTransition.resultMaterial;
+            _latentHeat = def.heatingTransition.latentHeat;
             return true;
         }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
-            tile.liquidMaterial = _liquidForm;
+            tile.liquidMaterial = _resultMaterial;
             tile.liquidVolume   = tile.LiquidCapacity * MeltFillFraction;
             tile.groundMaterial = MaterialType.EMPTY;
             tile.temperature    = Mathf.Clamp(tile.temperature - _latentHeat, _minTemperature, _maxTemperature);
@@ -62,7 +62,7 @@ namespace PhysicsSystem.Rules.Rules
 
     /// <summary>
     /// Un líquido en liquidMaterial solidifica cuando su temperatura cae
-    /// por debajo de freezingPoint. El sólido resultante pasa a groundMaterial.
+    /// por debajo de coolingTransition.triggerTemperature. El sólido resultante pasa a groundMaterial.
     /// El volumen de líquido se consume completamente.
     /// </summary>
     public class R14_Freezing : IInteractionRule
@@ -75,7 +75,7 @@ namespace PhysicsSystem.Rules.Rules
         private readonly float _minTemperature;
         private readonly float _maxTemperature;
 
-        private MaterialType _solidForm;
+        private MaterialType _resultMaterial;
         private float        _latentHeat;
 
         public R14_Freezing(float minTemp, float maxTemp)
@@ -88,21 +88,21 @@ namespace PhysicsSystem.Rules.Rules
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
-            if (def == null || def.freezingPoint <= 0f)     return false;
-            if (def.matterState != MatterState.Liquid)      return false;
-            if (tile.liquidMaterial == MaterialType.EMPTY)  return false;
-            if (tile.liquidVolume <= 0f)                    return false;
-            if (tile.temperature > def.freezingPoint)       return false;
-            if (def.solidForm == MaterialType.EMPTY)        return false;
+            if (def == null) return false;
+            if (!def.HasCoolingTransition) return false;
+            if (def.MatterState != MatterState.Liquid) return false;
+            if (tile.liquidMaterial == MaterialType.EMPTY) return false;
+            if (tile.liquidVolume <= 0f) return false;
+            if (tile.temperature > def.coolingTransition.triggerTemperature) return false;
 
-            _solidForm  = def.solidForm;
-            _latentHeat = def.latentHeatOfFusion;
+            _resultMaterial = def.coolingTransition.resultMaterial;
+            _latentHeat = def.coolingTransition.latentHeat;
             return true;
         }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
-            tile.groundMaterial = _solidForm;
+            tile.groundMaterial = _resultMaterial;
             tile.liquidMaterial = MaterialType.EMPTY;
             tile.liquidVolume   = 0f;
             tile.temperature    = Mathf.Clamp(tile.temperature + _latentHeat, _minTemperature, _maxTemperature);
@@ -112,11 +112,10 @@ namespace PhysicsSystem.Rules.Rules
     // ── R15 Boiling — líquido → gas ───────────────────────────────────────────
 
     /// <summary>
-    /// Un líquido en liquidMaterial hierve cuando su temperatura supera boilingPoint.
-    /// El gas resultante pasa a gasMaterial y su densidad aumenta.
+    /// Un líquido en liquidMaterial hierve cuando su temperatura supera
+    /// heatingTransition.triggerTemperature. El gas resultante pasa a gasMaterial.
     /// Si ya hay gas en gasMaterial, la ebullición solo incrementa gasDensity.
     /// Presuriza y transfiere calor a los vecinos.
-    /// Absorbe el caso WATER→STEAM que manejaba R02 Evaporation.
     /// </summary>
     public class R15_Boiling : IInteractionRule
     {
@@ -131,8 +130,9 @@ namespace PhysicsSystem.Rules.Rules
         private readonly float _minTemperature;
         private readonly float _maxTemperature;
 
-        private MaterialType _gasForm;
+        private MaterialType _resultMaterial;
         private float        _latentHeat;
+        private float        _triggerTemperature;
 
         public R15_Boiling(float minTemp, float maxTemp)
         {
@@ -144,27 +144,28 @@ namespace PhysicsSystem.Rules.Rules
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
-            if (def == null || def.boilingPoint <= 0f)      return false;
-            if (def.matterState != MatterState.Liquid)      return false;
-            if (tile.liquidMaterial == MaterialType.EMPTY)  return false;
-            if (tile.liquidVolume <= 0f)                    return false;
-            if (tile.temperature < def.boilingPoint)        return false;
-            if (def.gasForm == MaterialType.EMPTY)          return false;
+            if (def == null) return false;
+            if (!def.HasHeatingTransition) return false;
+            if (def.MatterState != MatterState.Liquid) return false;
+            if (tile.liquidMaterial == MaterialType.EMPTY) return false;
+            if (tile.liquidVolume <= 0f) return false;
+            if (tile.temperature < def.heatingTransition.triggerTemperature) return false;
 
-            _gasForm    = def.gasForm;
-            _latentHeat = def.latentHeatOfVaporization;
+            _resultMaterial = def.heatingTransition.resultMaterial;
+            _latentHeat = def.heatingTransition.latentHeat;
+            _triggerTemperature = def.heatingTransition.triggerTemperature;
             return true;
         }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
         {
             float evaporationRate = Mathf.Clamp01(
-                (tile.temperature - def.boilingPoint) / 20f) * 50f + 10f;
+                (tile.temperature - _triggerTemperature) / 20f) * 50f + 10f;
 
             float volumeToEvaporate = Mathf.Min(tile.liquidVolume, evaporationRate);
 
             if (tile.gasMaterial == MaterialType.EMPTY)
-                tile.gasMaterial = _gasForm;
+                tile.gasMaterial = _resultMaterial;
 
             tile.liquidVolume = Mathf.Clamp(tile.liquidVolume - volumeToEvaporate, 0f, tile.LiquidCapacity);
             if (tile.liquidVolume <= 0f)
@@ -187,7 +188,7 @@ namespace PhysicsSystem.Rules.Rules
 
     /// <summary>
     /// Un gas en gasMaterial condensa cuando su temperatura cae por debajo
-    /// de condensationPoint. El líquido resultante pasa a liquidMaterial.
+    /// de coolingTransition.triggerTemperature. El líquido resultante pasa a liquidMaterial.
     /// Si ya hay líquido, el gas desaparece (se disuelve) y suma volumen.
     /// </summary>
     public class R16_Condensation : IInteractionRule
@@ -203,7 +204,7 @@ namespace PhysicsSystem.Rules.Rules
         private readonly float _minTemperature;
         private readonly float _maxTemperature;
 
-        private MaterialType _condensedForm;
+        private MaterialType _resultMaterial;
         private float        _latentHeat;
 
         public R16_Condensation(float minTemp, float maxTemp)
@@ -216,14 +217,14 @@ namespace PhysicsSystem.Rules.Rules
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
-            if (def == null || def.condensationPoint <= 0f) return false;
-            if (def.matterState != MatterState.Gas)         return false;
-            if (tile.gasMaterial == MaterialType.EMPTY)     return false;
-            if (tile.temperature > def.condensationPoint)   return false;
-            if (def.condensedForm == MaterialType.EMPTY)    return false;
+            if (def == null) return false;
+            if (!def.HasCoolingTransition) return false;
+            if (def.MatterState != MatterState.Gas) return false;
+            if (tile.gasMaterial == MaterialType.EMPTY) return false;
+            if (tile.temperature > def.coolingTransition.triggerTemperature) return false;
 
-            _condensedForm = def.condensedForm;
-            _latentHeat    = def.latentHeatOfVaporization;
+            _resultMaterial = def.coolingTransition.resultMaterial;
+            _latentHeat = def.coolingTransition.latentHeat;
             return true;
         }
 
@@ -237,7 +238,7 @@ namespace PhysicsSystem.Rules.Rules
             {
                 if (tile.liquidMaterial == MaterialType.EMPTY)
                 {
-                    tile.liquidMaterial = _condensedForm;
+                    tile.liquidMaterial = _resultMaterial;
                     tile.liquidVolume   = Mathf.Min(CondensationVolume, capacity);
                 }
                 else

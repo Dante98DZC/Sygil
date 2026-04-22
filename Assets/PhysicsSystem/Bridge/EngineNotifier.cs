@@ -11,19 +11,15 @@ namespace PhysicsSystem.Bridge
     /// Compara snapshot pre-tick vs post-tick y emite eventos de cambio.
     ///
     /// Eventos:
-    ///   OnMaterialChanged    — el material del tile cambió (Render-1)
+    ///   OnMaterialChanged    — el material dominante del tile cambió
     ///   OnTileStatesChanged  — los derivedStates del tile cambiaron
-    ///   OnPropertiesChanged  — al menos una propiedad numérica cambió (Render-2b)
-    ///
-    /// v4: TilePropertySnapshot elimina Pressure / Humidity y agrega LiquidVolume.
-    /// OnMaterialChanged sigue emitiendo el material calculado (capa dominante)
-    /// para compatibilidad con SimulationRenderer hasta que se migre a Render-2a.
+    ///   OnPropertiesChanged  — al menos una propiedad numérica cambió
     /// </summary>
     public class EngineNotifier
     {
-        // ── Eventos ──────────────────────────────────────────────────────────
+        // ── Eventos ───────────────────────────────────────────────────────────
 
-        public event Action<Vector2Int, StateFlags, StateFlags>    OnTileStatesChanged;
+        public event Action<Vector2Int, StateFlags, StateFlags>     OnTileStatesChanged;
         public event Action<Vector2Int, MaterialType, MaterialType> OnMaterialChanged;
 
         /// <summary>
@@ -32,7 +28,7 @@ namespace PhysicsSystem.Bridge
         /// </summary>
         public event Action<Vector2Int, TilePropertySnapshot> OnPropertiesChanged;
 
-        // ── Snapshots internos ───────────────────────────────────────────────
+        // ── Snapshots internos ────────────────────────────────────────────────
 
         private readonly Dictionary<Vector2Int, StateFlags>           _prevStates    = new();
         private readonly Dictionary<Vector2Int, MaterialType>         _prevMaterials = new();
@@ -40,12 +36,25 @@ namespace PhysicsSystem.Bridge
 
         private const float PropertyChangeTolerance = 0.1f;
 
-        // ── Snapshot ─────────────────────────────────────────────────────────
+        // ── Helper ────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Material dominante del tile según prioridad de capa: Liquid > Gas > Ground.
+        /// Nunca usa tile.material (obsoleto).
+        /// </summary>
+        private static MaterialType GetDominantMaterial(in TileData tile)
+        {
+            if (tile.liquidMaterial != MaterialType.EMPTY) return tile.liquidMaterial;
+            if (tile.gasMaterial    != MaterialType.EMPTY) return tile.gasMaterial;
+            if (tile.groundMaterial != MaterialType.EMPTY) return tile.groundMaterial;
+            return MaterialType.EMPTY;
+        }
+
+        // ── Snapshot ──────────────────────────────────────────────────────────
 
         /// <summary>
         /// Captura el estado pre-tick de todos los tiles activos y sus vecinos.
-        /// Incluir vecinos evita que Dispatch compare tiles recién activados
-        /// durante el tick contra TilePropertySnapshot.Zero.
+        /// Incluir vecinos evita comparar tiles recién activados contra Zero.
         /// </summary>
         public void Snapshot(PhysicsGrid grid)
         {
@@ -60,38 +69,32 @@ namespace PhysicsSystem.Bridge
 
         private void SnapshotTile(Vector2Int pos, PhysicsGrid grid)
         {
-            var tile = grid.GetTile(pos);
+            ref readonly var tile = ref grid.GetTile(pos);
             _prevStates[pos]    = tile.derivedStates;
-
-            // Usar capa dominante para compat con SimulationRenderer (Render-1).
-            // TODO Render-2a: migrar a snapshot por capa (groundMaterial / liquidMaterial / gasMaterial).
-#pragma warning disable CS0618
-            _prevMaterials[pos] = tile.material;
-#pragma warning restore CS0618
-
-            _prevProps[pos] = TilePropertySnapshot.From(tile);
+            _prevMaterials[pos] = GetDominantMaterial(tile);
+            _prevProps[pos]     = TilePropertySnapshot.From(tile);
         }
 
-        // ── Dispatch ─────────────────────────────────────────────────────────
+        // ── Dispatch ──────────────────────────────────────────────────────────
 
         public void Dispatch(PhysicsGrid grid)
         {
             foreach (var pos in grid.ActiveTiles)
             {
-                var tile = grid.GetTile(pos);
+                ref readonly var tile = ref grid.GetTile(pos);
 
-                // ── States ───────────────────────────────────────────────────
-                if (_prevStates.TryGetValue(pos, out var prevState) && prevState != tile.derivedStates)
+                // ── States ────────────────────────────────────────────────────
+                if (_prevStates.TryGetValue(pos, out var prevState) &&
+                    prevState != tile.derivedStates)
                     OnTileStatesChanged?.Invoke(pos, prevState, tile.derivedStates);
 
-                // ── Material (capa dominante — compat Render-1) ──────────────
-#pragma warning disable CS0618
+                // ── Material dominante ────────────────────────────────────────
                 var prevMat = _prevMaterials.TryGetValue(pos, out var pm) ? pm : MaterialType.EMPTY;
-                if (prevMat != tile.material)
-                    OnMaterialChanged?.Invoke(pos, prevMat, tile.material);
-#pragma warning restore CS0618
+                var currMat = GetDominantMaterial(tile);
+                if (prevMat != currMat)
+                    OnMaterialChanged?.Invoke(pos, prevMat, currMat);
 
-                // ── Propiedades numéricas ────────────────────────────────────
+                // ── Propiedades numéricas ─────────────────────────────────────
                 if (OnPropertiesChanged == null) continue;
 
                 var prevP = _prevProps.TryGetValue(pos, out var pp) ? pp : TilePropertySnapshot.Zero;
@@ -103,13 +106,10 @@ namespace PhysicsSystem.Bridge
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
     /// <summary>
     /// Snapshot ligero de las propiedades numéricas de un tile.
     /// Struct para evitar allocaciones en el hot path.
-    ///
-    /// v4: elimina Pressure y Humidity (campos removidos de TileData).
-    ///     Agrega LiquidVolume como nuevo indicador de estado de la capa Liquid.
     /// </summary>
     public readonly struct TilePropertySnapshot
     {
@@ -130,7 +130,7 @@ namespace PhysicsSystem.Bridge
             LiquidVolume        = lv;
         }
 
-        public static TilePropertySnapshot From(TileData tile) => new(
+        public static TilePropertySnapshot From(in TileData tile) => new(
             tile.temperature,
             tile.electricEnergy,
             tile.gasDensity,
@@ -148,14 +148,14 @@ namespace PhysicsSystem.Bridge
         /// <summary>
         /// Intensidad dominante normalizada [0..1].
         /// Usada por PropertyOverlayRenderer para el modo combinado (tecla 9).
-        /// LiquidVolume se normaliza contra 1000 (Deep capacity máxima).
+        /// LiquidVolume se normaliza contra 1000 (capacidad máxima Deep).
         /// </summary>
         public float DominantIntensity =>
             Mathf.Max(
-                Temperature   / 100f,
+                Temperature    / 100f,
                 ElectricEnergy / 100f,
-                GasDensity    / 100f,
-                LiquidVolume  / 1000f
+                GasDensity     / 100f,
+                LiquidVolume   / 1000f
             );
     }
 }

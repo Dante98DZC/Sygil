@@ -166,7 +166,10 @@ namespace PhysicsSystem.Powers
         private void ApplyEffects(PhysicsGrid grid, Vector2Int pos, float distance)
         {
             ref var tile = ref grid.GetTile(pos);
-            if (tile.material == MaterialType.EMPTY) return;
+            bool anyEmpty = tile.groundMaterial == MaterialType.EMPTY &&
+                         tile.liquidMaterial == MaterialType.EMPTY &&
+                         tile.gasMaterial == MaterialType.EMPTY;
+            if (anyEmpty) return;
 
             bool anyApplied = false;
             foreach (var effect in _power.effects)
@@ -186,8 +189,13 @@ namespace PhysicsSystem.Powers
         {
             if (!cond.active) return true;
 
-            if (cond.checkMaterial && tile.material != cond.requiredMaterial)
-                return false;
+            if (cond.checkMaterial)
+            {
+                bool hasMaterial = tile.groundMaterial == cond.requiredMaterial ||
+                                 tile.liquidMaterial == cond.requiredMaterial ||
+                                 tile.gasMaterial == cond.requiredMaterial;
+                if (!hasMaterial) return false;
+            }
 
             if (cond.checkProperty && ReadProperty(tile, cond.checkedProperty) <= cond.threshold)
                 return false;

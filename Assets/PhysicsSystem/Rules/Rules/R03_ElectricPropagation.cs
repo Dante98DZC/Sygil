@@ -17,7 +17,7 @@ namespace PhysicsSystem.Rules.Rules
         {
             for (int i = 0; i < neighbors.Length; i++)
             {
-                float etc = neighborDefs[i] != null ? neighborDefs[i].electricTransferCoeff : 0f;
+                float etc = neighborDefs[i] != null ? neighborDefs[i].structural.electricTransferCoeff : 0f;
                 float transfer = tile.electricEnergy * etc;
                 neighbors[i].electricEnergy = Mathf.Clamp(neighbors[i].electricEnergy + transfer, 0f, 100f);
                 neighbors[i].dirty = true;

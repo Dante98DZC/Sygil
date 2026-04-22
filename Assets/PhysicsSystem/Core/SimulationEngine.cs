@@ -77,8 +77,6 @@ namespace PhysicsSystem.Core
 
             // ── Phase transitions: solid ↔ liquid ↔ gas ──────────────────────
             // Priority order within INTEGRITY tick: Melting(3) = Freezing(3) > Boiling(2) = Condensation(2)
-            // R02 fallback evaporation runs before phase rules (Priority 6)
-            _ruleRegistry.AddRule(new Rules.Rules.R02_Evaporation());
             _ruleRegistry.AddRule(new Rules.Rules.R13_Melting(config.minTemperature, config.maxTemperature));
             _ruleRegistry.AddRule(new Rules.Rules.R14_Freezing(config.minTemperature, config.maxTemperature));
             _ruleRegistry.AddRule(new Rules.Rules.R15_Boiling(config.minTemperature, config.maxTemperature));

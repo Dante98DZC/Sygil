@@ -26,85 +26,145 @@ namespace PhysicsSystem.Tests.Editor
         public static MaterialDefinition Wood() => new MaterialDefinition
         {
             materialType = MaterialType.WOOD,
-            flammabilityCoeff = 0.8f,
+            layer = MaterialLayer.Ground,
             heatTransferCoeff = 0.6f,
-            electricTransferCoeff = 0.1f,
-            gasPermeabilityCoeff = 0.3f,
-            integrityBase = 60f,
-            // Transiciones
-            ignitionTemperature = 70f,
-            burnInto = MaterialType.ASH,
-            smokeForm = MaterialType.SMOKE,
-            collapseInto = MaterialType.EARTH,
-            hasMeltingPoint = false,
+            structural = new StructuralData
+            {
+                flammabilityCoeff = 0.8f,
+                integrityBase = 60f,
+                electricTransferCoeff = 0.1f,
+                collapseInto = MaterialType.EARTH,
+                isPorous = false
+            },
+            atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = 0.3f
+            },
+            combustion = new CombustionData
+            {
+                ignitionTemperature = 70f,
+                ashMaterial = MaterialType.ASH,
+                smokeMaterial = MaterialType.SMOKE
+            }
         };
 
         public static MaterialDefinition Water() => new MaterialDefinition
         {
             materialType = MaterialType.WATER,
-            flammabilityCoeff = 0f,
+            layer = MaterialLayer.Liquid,
             heatTransferCoeff = 0.4f,
-            electricTransferCoeff = 0.9f,
-            gasPermeabilityCoeff = 0.2f,
-            integrityBase = 20f,
-            ignitionTemperature = 0f,     // no arde
-            collapseInto = MaterialType.EMPTY,
-            hasMeltingPoint = false,
+            structural = new StructuralData
+            {
+                flammabilityCoeff = 0f,
+                integrityBase = 20f,
+                electricTransferCoeff = 0.9f,
+                collapseInto = MaterialType.EMPTY,
+                isPorous = false
+            },
+            atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = 0.2f
+            },
+            combustion = new CombustionData
+            {
+                ignitionTemperature = 0f
+            }
         };
 
         public static MaterialDefinition Metal() => new MaterialDefinition
         {
             materialType = MaterialType.METAL,
-            flammabilityCoeff = 0f,
+            layer = MaterialLayer.Ground,
             heatTransferCoeff = 0.8f,
-            electricTransferCoeff = 0.95f,
-            gasPermeabilityCoeff = 0f,
-            integrityBase = 100f,
-            ignitionTemperature = 0f,     // no arde
-            collapseInto = MaterialType.EMPTY,
-            hasMeltingPoint = true,
-            meltingTemperature = 90f,
-            meltInto = MaterialType.EMPTY,
+            structural = new StructuralData
+            {
+                flammabilityCoeff = 0f,
+                integrityBase = 100f,
+                electricTransferCoeff = 0.95f,
+                collapseInto = MaterialType.EMPTY,
+                isPorous = false
+            },
+            atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = 0f
+            },
+            combustion = new CombustionData
+            {
+                ignitionTemperature = 0f
+            },
+            heatingTransition = PhaseTransition.Heating(90f, MaterialType.EMPTY, 0f)
         };
 
         public static MaterialDefinition Stone() => new MaterialDefinition
         {
             materialType = MaterialType.STONE,
-            flammabilityCoeff = 0f,
+            layer = MaterialLayer.Ground,
             heatTransferCoeff = 0.3f,
-            electricTransferCoeff = 0f,
-            gasPermeabilityCoeff = 0f,
-            integrityBase = 90f,
-            ignitionTemperature = 0f,
-            collapseInto = MaterialType.EMPTY,
-            hasMeltingPoint = false,
+            structural = new StructuralData
+            {
+                flammabilityCoeff = 0f,
+                integrityBase = 90f,
+                electricTransferCoeff = 0f,
+                collapseInto = MaterialType.EMPTY,
+                isPorous = false
+            },
+            atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = 0f
+            },
+            combustion = new CombustionData
+            {
+                ignitionTemperature = 0f
+            },
         };
 
         public static MaterialDefinition Empty() => new MaterialDefinition
         {
             materialType = MaterialType.EMPTY,
-            flammabilityCoeff = 0f,
+            layer = MaterialLayer.Ground,
             heatTransferCoeff = 0f,
-            electricTransferCoeff = 0f,
-            gasPermeabilityCoeff = 0f,
-            integrityBase = 0f,
-            ignitionTemperature = 0f,
-            collapseInto = MaterialType.EMPTY,
-            hasMeltingPoint = false,
+            structural = new StructuralData
+            {
+                flammabilityCoeff = 0f,
+                integrityBase = 0f,
+                electricTransferCoeff = 0f,
+                collapseInto = MaterialType.EMPTY,
+                isPorous = false
+            },
+            atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = 0f
+            },
+            combustion = new CombustionData
+            {
+                ignitionTemperature = 0f
+            }
         };
 
         public static MaterialDefinition Gas() => new MaterialDefinition
         {
             materialType = MaterialType.GAS,
-            flammabilityCoeff = 0.9f,
+            layer = MaterialLayer.Gas,
             heatTransferCoeff = 0.2f,
-            electricTransferCoeff = 0f,
-            gasPermeabilityCoeff = 1.0f,
-            integrityBase = 5f,
-            ignitionTemperature = 60f,
-            smokeForm = MaterialType.CO2,
-            collapseInto = MaterialType.EMPTY,
-            hasMeltingPoint = false,
+            structural = new StructuralData
+            {
+                flammabilityCoeff = 0.9f,
+                integrityBase = 5f,
+                electricTransferCoeff = 0f,
+                collapseInto = MaterialType.EMPTY,
+                isPorous = false
+            },
+            atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = 1.0f,
+                isFlammable = true,
+                ignitionTemperature = 60f
+            },
+            combustion = new CombustionData
+            {
+                ignitionTemperature = 60f,
+                smokeMaterial = MaterialType.CO2
+            }
         };
 
         public static TileData[] NeutralNeighbors(int count = 4)
@@ -297,59 +357,7 @@ namespace PhysicsSystem.Tests.Editor
     }
 
     // =========================================================================
-    // R02 — Evaporation
-    // =========================================================================
-    [TestFixture]
-    public class R02_EvaporationTests
-    {
-        private R02_Evaporation _rule;
-
-        [SetUp] public void SetUp() => _rule = new R02_Evaporation();
-
-        [Test]
-        public void CanApply_ReturnsFalse_WhenNotWater()
-        {
-            var tile = new TileData { groundMaterial = MaterialType.WOOD, temperature = 90f };
-            Assert.IsFalse(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Wood()));
-        }
-
-        [Test]
-        public void CanApply_ReturnsFalse_WhenTempBelow80()
-        {
-            var tile = new TileData { liquidMaterial = MaterialType.WATER, temperature = 79f };
-            Assert.IsFalse(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Water()));
-        }
-
-        [Test]
-        public void CanApply_ReturnsTrue_WhenWaterAndHot()
-        {
-            var tile = new TileData { liquidMaterial = MaterialType.WATER, temperature = 85f, liquidVolume = 50f };
-            Assert.IsTrue(_rule.CanApply(tile, TestHelpers.NeutralNeighbors(), TestHelpers.Water()));
-        }
-
-        [Test]
-        public void Apply_SetsGasMaterial()
-        {
-            var tile = new TileData { liquidMaterial = MaterialType.WATER, temperature = 85f, liquidVolume = 50f };
-            _rule.Apply(ref tile, TestHelpers.NeutralNeighbors(), TestHelpers.NeutralNeighborDefs());
-            Assert.AreEqual(MaterialType.STEAM, tile.gasMaterial);
-        }
-
-        [Test]
-        public void Apply_IncreasesNeighborPressure()
-        {
-            var tile = new TileData { liquidMaterial = MaterialType.WATER, temperature = 85f, liquidVolume = 50f };
-            var neighbors = TestHelpers.NeutralNeighbors();
-            var defs = new MaterialDefinition[] { TestHelpers.Stone(), TestHelpers.Stone(),
-                                                       TestHelpers.Stone(), TestHelpers.Stone() };
-            // Guardamos presión inicial (0)
-            _rule.Apply(ref tile, neighbors, defs);
-            foreach (var n in neighbors)
-                Assert.Greater(n.gasDensity, 0f, "Neighbor gasDensity should increase after evaporation");
-        }
-    }
-
-    // =========================================================================
+// =========================================================================
     // R03 — Electric Propagation
     // =========================================================================
     [TestFixture]

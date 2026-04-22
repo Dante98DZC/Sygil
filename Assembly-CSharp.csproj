@@ -80,7 +80,6 @@
     <Compile Include="Assets\PhysicsSystem\Diffusion\DiffusionStrategy.cs" />
     <Compile Include="Assets\PhysicsSystem\Core\MaterialPresets.cs" />
     <Compile Include="Assets\PhysicsSystem\Player\PlayerActionChannel.cs" />
-    <Compile Include="Assets\PhysicsSystem\Rules\Rules\R02_Evaporation.cs" />
     <Compile Include="Assets\PhysicsSystem\Core\MaterialSubData.cs" />
     <Compile Include="Assets\PhysicsSystem\Renderer\Overlay\OverlayMode.cs" />
     <Compile Include="Assets\PhysicsSystem\Tests\TestWorldGenerator.cs" />

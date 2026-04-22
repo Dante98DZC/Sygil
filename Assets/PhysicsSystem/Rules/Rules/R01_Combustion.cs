@@ -18,9 +18,7 @@ namespace PhysicsSystem.Rules.Rules
     ///   - Daña structuralIntegrity (el material se consume)
     ///
     /// La combustión completa (integridad → 0) activa R07 que escribe
-    /// burnInto en groundMaterial.
-    ///
-    /// v4: usa layers, no materialobsoleto.
+    /// collapseInto en groundMaterial.
     /// </summary>
     public class R01_Combustion : IInteractionRule
     {
@@ -34,13 +32,13 @@ namespace PhysicsSystem.Rules.Rules
 
         public bool CanApply(TileData tile, TileData[] neighbors, MaterialDefinition def)
         {
-            if (def == null)                                   return false;
-            if (def.ignitionTemperature <= 0f)               return false;
-            if (tile.temperature <= def.ignitionTemperature)  return false;
-            if (def.flammabilityCoeff   <= 0.5f)             return false;
+            if (def == null) return false;
+            if (!def.IsFlammable) return false;
+            if (tile.temperature <= def.combustion.ignitionTemperature) return false;
+            if (def.structural.flammabilityCoeff <= 0.5f) return false;
 
-            _flammability = def.flammabilityCoeff;
-            _smokeForm   = def.smokeForm;
+            _flammability = def.structural.flammabilityCoeff;
+            _smokeForm   = def.combustion.smokeMaterial;
             return true;
         }
 

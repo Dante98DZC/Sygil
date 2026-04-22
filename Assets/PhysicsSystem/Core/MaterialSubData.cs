@@ -34,6 +34,9 @@ namespace PhysicsSystem.Core
         [Range(0f, 1f)]
         public float flammabilityCoeff;
 
+        [Tooltip("Si true, este suelo puede absorber líquidos (filtración). Aplica solo a layer=Ground.")]
+        public bool isPorous;
+
         // ── Defaults ─────────────────────────────────────────────────────────
 
         /// <summary>Configuración para sólidos indestructibles no conductores (STONE, METAL base).</summary>

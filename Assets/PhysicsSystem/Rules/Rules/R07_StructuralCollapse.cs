@@ -28,7 +28,7 @@ namespace PhysicsSystem.Rules.Rules
 
             if (tile.structuralIntegrity < 10f)
             {
-                _resultMaterial = def.collapseInto;
+                _resultMaterial = def.structural.collapseInto;
                 return true;
             }
 

@@ -24,7 +24,7 @@ namespace PhysicsSystem.Diffusion
         {
             _property = property;
             _config = property == GradientProperty.ElectricEnergy
-                ? new GradientConfig(coeff: d => d.electricTransferCoeff)
+                ? new GradientConfig(coeff: d => d.structural.electricTransferCoeff)
                 : new GradientConfig(coeff: d => d.heatTransferCoeff);
 
             TickType = property == GradientProperty.ElectricEnergy

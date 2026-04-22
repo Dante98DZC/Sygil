@@ -369,16 +369,24 @@ namespace PhysicsSystem.Tests.PlayMode
         {
             var def = ScriptableObject.CreateInstance<MaterialDefinition>();
             def.materialType = type;
-            def.flammabilityCoeff = flammability;
-            def.integrityBase = integrity;
+            def.layer = MaterialLayer.Ground;
+            def.structural = new StructuralData
+            {
+                flammabilityCoeff = flammability,
+                integrityBase = integrity,
+                electricTransferCoeff = elec,
+                collapseInto = collapseInto,
+                isPorous = false
+            };
             def.heatTransferCoeff = heat;
-            def.electricTransferCoeff = elec;
-            def.gasPermeabilityCoeff = gas;
-            def.ignitionTemperature = ignitionTemp;
-            def.collapseInto = collapseInto;
-            def.hasMeltingPoint = hasMeltingPoint;
-            def.meltingTemperature = meltingTemp;
-            def.meltInto = meltInto;
+            def.atmospheric = new AtmosphericData
+            {
+                gasPermeabilityCoeff = gas
+            };
+            def.combustion = new CombustionData
+            {
+                ignitionTemperature = ignitionTemp
+            };
             return def;
         }
     }

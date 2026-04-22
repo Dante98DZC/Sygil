@@ -141,12 +141,10 @@ namespace PhysicsSystem.Core
             _                    => 0f
         };
 
-        // ── Compatibilidad hacia atrás ────────────────────────────────────────
+        // ── Helpers estáticos ───────────────────────────────────────────────
 
         /// <summary>
-        /// Estado de materia por defecto basado en el tipo.
-        /// Usado por código legacy que no accede a la instancia de MaterialDefinition.
-        /// Para código nuevo, usar <see cref="MatterState"/> en la instancia.
+        /// Estado de materia derivado del tipo de material.
         /// </summary>
         public static MatterState GetDefaultState(MaterialType type) => type switch
         {

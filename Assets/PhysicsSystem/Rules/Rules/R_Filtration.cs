@@ -31,9 +31,9 @@ namespace PhysicsSystem.Rules.Rules
             if (tile.liquidVolume <= 0f) return false;
 
             var groundDef = _library.Get(tile.groundMaterial);
-            if (groundDef == null || !groundDef.isPorous) return false;
+            if (groundDef == null || !groundDef.structural.isPorous) return false;
 
-            return tile.soilMoisture < groundDef.soilSaturationCapacity;
+            return tile.soilMoisture < groundDef.fluid.soilSaturationCapacity;
         }
 
         public void Apply(ref TileData tile, TileData[] neighbors, MaterialDefinition[] neighborDefs)
@@ -41,12 +41,12 @@ namespace PhysicsSystem.Rules.Rules
             var groundDef = _library.Get(tile.groundMaterial);
             var liquidDef = _library.Get(tile.liquidMaterial);
 
-            float absorption = groundDef.soilAbsorptionRate * (liquidDef?.viscosity ?? 1f);
-            float available = groundDef.soilSaturationCapacity - tile.soilMoisture;
+            float absorption = groundDef.fluid.soilAbsorptionRate * (liquidDef?.fluid.viscosity ?? 1f);
+            float available = groundDef.fluid.soilSaturationCapacity - tile.soilMoisture;
             float actual = Mathf.Min(absorption, available, tile.liquidVolume);
 
             tile.liquidVolume -= actual;
-            tile.soilMoisture = Mathf.Clamp(tile.soilMoisture + actual, 0f, groundDef.soilSaturationCapacity);
+            tile.soilMoisture = Mathf.Clamp(tile.soilMoisture + actual, 0f, groundDef.fluid.soilSaturationCapacity);
 
             if (tile.liquidVolume <= 0f)
                 tile.liquidMaterial = MaterialType.EMPTY;

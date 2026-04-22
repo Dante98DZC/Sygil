@@ -10,15 +10,10 @@ namespace PhysicsSystem.Rules.Rules
     /// Cuando hay alta densidad de gas INFLAMABLE y temperatura elevada, el gas se ignita:
     /// libera calor, consume gas y genera una onda de presión.
     ///
-    /// Solo aplica a gases con isFlammableGas = true (GAS, ROCK_GAS).
+    /// Solo aplica a gases con IsFlammableGas = true (GAS, ROCK_GAS).
     /// No aplica a SMOKE, STEAM, CO2, AIR.
     ///
-    /// La onda de presión se modela subiendo gasDensity de vecinos (via difusión
-    /// normal) en lugar del campo pressure eliminado en v4. El exceso de gasDensity
-    /// en el tile fuente decaerá hacia el baseline en el siguiente DecaySystem tick.
-    ///
-    /// v4: elimina escritura en pressure (campo removido). El +10 de presurización
-    /// pasa a gasDensity, que es el proxy de presión en v4.
+    /// La onda de presión se modela subiendo gasDensity de vecinos.
     /// </summary>
     public class R10_GasIgnition : IInteractionRule
     {
@@ -38,7 +33,7 @@ namespace PhysicsSystem.Rules.Rules
             if (tile.temperature <= TemperatureThreshold) return false;
             if (tile.gasMaterial == MaterialType.EMPTY) return false;
 
-            if (def == null || !def.isFlammableGas) return false;
+            if (def == null || !def.IsFlammableGas) return false;
 
             _gasDef = def;
             return true;

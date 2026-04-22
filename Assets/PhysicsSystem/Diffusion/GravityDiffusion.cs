@@ -84,12 +84,12 @@ namespace PhysicsSystem.Diffusion
                     Vector2Int direction = npos - pos;
                     float bias = ComputeBias(ref tile, ref neighbor, direction);
 
-                    float coeff = tileDef.gasPermeabilityCoeff;
+                    float coeff = tileDef.GasPermeability;
                     if (neighborMat != MaterialType.EMPTY)
                     {
                         var nDef = lib.Get(neighborMat);
                         if (nDef != null)
-                            coeff = Mathf.Min(coeff, nDef.gasPermeabilityCoeff);
+                            coeff = Mathf.Min(coeff, nDef.GasPermeability);
                     }
 
                     float transfer = diff * coeff * bias * absDiff * 0.1f;
@@ -156,7 +156,7 @@ namespace PhysicsSystem.Diffusion
         {
             if (tile.gasMaterial == MaterialType.EMPTY) return false;
             var def = lib.Get(tile.gasMaterial);
-            return def != null && def.matterState == MatterState.Gas;
+            return def != null && def.MatterState == MatterState.Gas;
         }
 
         private float ComputeBias(ref TileData source, ref TileData neighbor, Vector2Int direction)
