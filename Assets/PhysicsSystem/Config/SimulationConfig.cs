@@ -59,5 +59,11 @@ namespace PhysicsSystem.Config
 
         [Tooltip("Diffusion rate between tiles and atmosphere (0-1).")]
         public float atmosphereDiffusionRate = 0.25f;
+
+        [Tooltip("Forced escape rate when gas density exceeds atmosphereVentThreshold.")]
+        public float atmosphereVentRate = 25f;
+
+        [Tooltip("Minimum gas density for active venting to trigger (above baseline).")]
+        public float atmosphereVentThreshold = 60f;
     }
 }

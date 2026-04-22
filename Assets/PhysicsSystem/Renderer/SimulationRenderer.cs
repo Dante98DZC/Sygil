@@ -29,6 +29,7 @@ namespace PhysicsSystem.Renderer
         [SerializeField] private float gasOpacityScale = 0.35f;
         [SerializeField] private float fireOpacityScale = 0.6f;
         [SerializeField] private Color fireColor = new Color(1f, 0.4f, 0f);
+        [SerializeField] private float gasVisibilityThreshold = 20f;
 
         [Header("Overlay")]
         [SerializeField] private bool useTemperatureOverlay = false;
@@ -242,16 +243,19 @@ namespace PhysicsSystem.Renderer
             // Gas / Fire
             gasMap.SetTile(cell, null);
             bool onFire = (tile.derivedStates & StateFlags.ON_FIRE) != 0;
+            bool hasVisibleGas = tile.gasMaterial != MaterialType.EMPTY
+                                 && tile.gasDensity > gasVisibilityThreshold;
 
-            if (tile.gasMaterial != MaterialType.EMPTY || onFire)
+            if (hasVisibleGas || onFire)
             {
-                if (tile.gasMaterial != MaterialType.EMPTY)
+                if (hasVisibleGas)
                     gasMap.SetTile(cell, visualLib.Get(tile.gasMaterial));
 
                 float gasA = Mathf.Clamp01(tile.gasDensity / 100f) * gasOpacityScale;
                 float fireA = onFire ? fireOpacityScale * (tile.temperature / 100f) : 0f;
                 Color c = onFire ? fireColor : Color.white;
                 c.a = Mathf.Clamp01(gasA + fireA);
+                gasMap.SetTileFlags(cell, TileFlags.None);
                 gasMap.SetColor(cell, c);
             }
         }

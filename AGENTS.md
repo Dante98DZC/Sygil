@@ -71,15 +71,29 @@ atmosphereDiffusionRate = 0.25f          // exchange rate per tick
 2. **Neighbor at capacity** (`neighborVal >= neighborCapacity - 0.1f`) — no transfer
 3. **Height-based bias** — fluid flows toward lower TileHeight
 
-## Render System (3-Layer Tilemap)
-- **GroundTilemap** (Order 0): base layer — always visible
-- **LiquidTilemap** (Order 1): transparent overlay — opacity scales with liquidVolume
-- **GasTilemap** (Order 2): transparent overlay — opacity scales with gasDensity
+## Render System (6-Layer Tilemap)
+- **BackgroundMap** (Order -3): dark background — fills empty space
+- **GroundTilemap** (Order -2): base layer — always visible
+- **LiquidTilemap** (Order -1): transparent overlay — opacity scales with liquidVolume
+- **GasTilemap** (Order 0): transparent overlay — opacity scales with gasDensity
+- **OverlayMap** (Order 1): diagnostic overlay — temperature/gas visualization separate from real data
+- **AmbientMap** (Order 2): ambient temperature tint — always visible at 15% opacity
+
+### Dirty Flag System
+- `SimulationRenderer` uses `dirtySet` (HashSet<Vector2Int>) to batch cell updates
+- `LateUpdate()` processes dirty cells once per frame, not immediately on change
+- Maximum 1 `DrawCell()` per unique cell per frame
+
+### Timer Configuration
+- CollectStats: **1.0s** (was 0.1s) — reduces iteration by 10x
+- Ambient tint: **0.5s** — subtle visual, doesn't need frequent updates
+- Overlay: on-demand toggle
 
 Setup in Unity:
-1. Create 3 Tilemap GameObjects under Sygil
-2. Set TilemapRenderer sorting order: Ground=0, Liquid=1, Gas=2
-3. Assign to SimulationRenderer fields in Inspector
+1. Create 6 Tilemap GameObjects under Sygil
+2. Set TilemapRenderer sorting order: Background=-3, Ground=-2, Liquid=-1, Gas=0, Overlay=1, Ambient=2
+3. Create WhiteTile.asset (1x1 white sprite)
+4. Assign all tilemaps + whiteTile to SimulationRenderer Inspector
 
 ## Fire Visual Response
 - R01_Combustion sets `StateFlags.ON_FIRE` in `derivedStates`

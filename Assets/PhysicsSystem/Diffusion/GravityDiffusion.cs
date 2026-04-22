@@ -106,13 +106,48 @@ namespace PhysicsSystem.Diffusion
                 {
                     float atmDiff = sourceVal - atmDensity;
                     float absAtmDiff = Mathf.Abs(atmDiff);
+
                     if (absAtmDiff > 0.5f)
                     {
                         float exchange = atmDiff * atmDiffusionRate * absAtmDiff * 0.1f;
                         exchange = Mathf.Clamp(exchange, -10f, 10f);
                         AddValue(ref tile, -exchange);
-                        if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
+
+                        if (sourceVal > config.atmosphereVentThreshold)
+                        {
+                            float excess = sourceVal - atmDensity;
+                            float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * Time.deltaTime);
+                            AddValue(ref tile, -ventAmount);
+                            grid.MarkDirty(pos);
+
+                            if (tile.gasDensity < 1f)
+                                tile.gasMaterial = MaterialType.EMPTY;
+                        }
+                        else if (tile.gasMaterial == MaterialType.EMPTY && sourceVal > atmDensity * 0.5f)
+                        {
                             tile.gasMaterial = config.atmosphereGas;
+                        }
+                    }
+                }
+            }
+
+            if (_property == GravityProperty.GasDensity)
+            {
+                for (int x = 0; x < grid.Width; x++)
+                {
+                    var topPos = new Vector2Int(x, grid.Height - 1);
+                    ref var topTile = ref grid.GetTile(topPos);
+                    if (!topTile.isAtmosphereOpen) continue;
+
+                    float density = topTile.gasDensity;
+                    if (density > config.atmosphereVentThreshold)
+                    {
+                        float excess = density - atmDensity;
+                        float ventAmount = Mathf.Min(excess, config.atmosphereVentRate * Time.deltaTime);
+                        topTile.gasDensity = Mathf.Max(atmDensity, density - ventAmount);
+                        if (topTile.gasDensity < 1f)
+                            topTile.gasMaterial = MaterialType.EMPTY;
+                        grid.MarkDirty(topPos);
                     }
                 }
             }
