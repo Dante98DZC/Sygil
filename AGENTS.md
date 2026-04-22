@@ -3,11 +3,11 @@
 ## Quick Start
 - Open in Unity Editor to run tests (Window → General → Test Runner)
 - No command-line test runner — uses Unity Test Framework
-- **73 EditMode tests** — all passing
+- Tests require updated MaterialDefinition assets (see Cleanup below)
 
-## Critical API (v4 — agents will guess wrong!)
+## Critical API (v5 — agents will guess wrong!)
 
-**TileData v4 uses layers, NOT `.material`:**
+**TileData v5 uses explicit layers:**
 ```csharp
 tile.groundMaterial   // terrain: STONE, EARTH, WOOD...
 tile.liquidMaterial  // fluids: WATER, LAVA, MUD...
@@ -18,20 +18,48 @@ tile.soilMoisture   // absorbed water in porous soil
 tile.isAtmosphereOpen // gas can dissipate
 tile.derivedStates  // StateFlags: ON_FIRE, ELECTRIFIED, etc.
 ```
-- `.material` property is `[Obsolete]` — don't use it
+- `.material` property has been **removed** — use groundMaterial/liquidMaterial/gasMaterial directly
 - Rules access specific layers via `rule.SourceLayer`
 - `isAtmosphereOpen` flag for gas dissipation
 - `soilMoisture` stores absorbed water in porous materials
 - `derivedStates` contains `StateFlags.ON_FIRE` for visual feedback
 
+## MaterialDefinition v5 — Struct-based Organization
+
+Materials now use nested structs instead of flat fields:
+
+```csharp
+public class MaterialDefinition : ScriptableObject
+{
+    public MaterialLayer layer;           // Ground, Liquid, or Gas
+    public float heatTransferCoeff;
+    
+    // Structs grouped by layer
+    public StructuralData structural;     // Ground layer: integrity, collapse, conductivity
+    public FluidData fluid;              // Liquid layer: viscosity, absorption
+    public AtmosphericData atmospheric;  // Gas layer: dissipation, permeability
+    public CombustionData combustion;    // Cross-layer: ignition, ash, smoke
+    
+    // Phase transitions use PhaseTransition struct
+    public PhaseTransition heatingTransition;  // melting, boiling
+    public PhaseTransition coolingTransition;  // freezing, condensation
+}
+```
+
+**Key properties:**
+- `IsFlammable` — true if combustion.ignitionTemperature > 0
+- `IsFlammableGas` — layer == Gas && atmospheric.isFlammable
+- `HasHeatingTransition` / `HasCoolingTransition`
+- `MatterState` — derived from layer (not serialized)
+
 ## Architecture
 - **Rules** → `IInteractionRule` in `RuleRegistry`
 - **Diffusion** → separate strategies per property
 - **4 tick types**: FAST(0.1s), STANDARD(0.3s), SLOW(0.5s), INTEGRITY(1.0s)
-- **17 rules**: R01-R17 (R13-R16 = phase transitions, R17 = filtration)
+- **16 rules**: R01-R17 (R02 removed, R13-R16 = phase transitions, R17 = filtration)
 
 ## Test Files
-- `RuleTests.cs` (EditMode) — 73 tests passing ✅
+- `RuleTests.cs` (EditMode) — tests updated for v5 API
 
 ## Atmosphere-Based Diffusion System (v6.3)
 
@@ -110,20 +138,19 @@ soilMoisture = 20L       // absorbed water
 ```
 
 ## Energy Conservation System
-- **Fusión (R13):** Consumes `latentHeatOfFusion` energy → cools tile
-- **Freezing (R14):** Releases `latentHeatOfFusion` energy → heats tile
-- **Boiling (R15):** Consumes `latentHeatOfVaporization` energy → cools tile
-- **Condensation (R16):** Releases `latentHeatOfVaporization` energy → heats tile
+- **Fusión (R13):** Consumes `heatingTransition.latentHeat` energy → cools tile
+- **Freezing (R14):** Releases `coolingTransition.latentHeat` energy → heats tile
+- **Boiling (R15):** Consumes `heatingTransition.latentHeat` energy → cools tile
+- **Condensation (R16):** Releases `coolingTransition.latentHeat` energy → heats tile
 - **Gas dissipation:** In open atmosphere (`isAtmosphereOpen=true`), gas diffuses naturally
 
-## Material Latent Heat Values
-| Material | latentHeatOfFusion | latentHeatOfVaporization |
+## Material Latent Heat Values (PhaseTransition)
+| Material | heatingTransition | coolingTransition |
 |----------|--------------------|-------------------------|
-| ICE      | 80                 | —                        |
-| WATER    | 80                 | 100                      |
-| STONE    | 150                | 200                      |
-| METAL    | 120                | 180                      |
-| GLASS    | 100                | 150                      |
+| ICE      | 30°C→WATER, latent=+5 | 0°C→ICE, latent=-5 |
+| WATER    | 80°C→STEAM, latent=+8 | 30°C→ICE, latent=-5 |
+| STONE    | 150°C→LAVA, latent=+15 | — |
+| METAL    | 120°C→MOLTEN_METAL | — |
 
 ## Key Methods
 - `PhysicsGrid.RebuildAtmosphereFlags()` — recalcula `isAtmosphereOpen`
